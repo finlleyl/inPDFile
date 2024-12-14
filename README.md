@@ -19,8 +19,58 @@ python -m venv venv
 uvicorn app.main:app --reload
 ```
 
+<a >Use Case<br /><img src="https://app.eraser.io/workspace/14r1YVxtyFhTji41pIiR/preview?elements=00vJrd4tIKARV51tpoYqsA&type=embed" /></a>
+
+<a >Архитектура проекта<br/><img src="https://app.eraser.io/workspace/9UGbsjQsAryi4xKqcbiM/preview" /></a>
+
+## Структура базы данных
+- **Database system:** PostgreSQL
+
+### users
+
+| Name        | Type          | Settings                      | References                    | Note                           |
+|-------------|---------------|-------------------------------|-------------------------------|--------------------------------|
+| **id** | SERIAL | 🔑 PK, not null  |  | |
+| **username** | VARCHAR(255) | not null , unique |  | |
+| **password_hash** | VARCHAR(255) | not null  |  | |
+| **email** | VARCHAR(255) | not null , unique |  | |
+| **full_name** | VARCHAR(255) | not null  |  | |
+| **role** | VARCHAR(50) | not null , default: user |  | |
+| **created_at** | TIMESTAMP | not null , default: CURRENT_TIMESTAMP |  | |
+| **updated_at** | TIMESTAMP | not null , default: CURRENT_TIMESTAMP |  | |
+| **last_login** | TIMESTAMP | not null  |  | | 
 
 
+### pdf_documents
+
+| Name        | Type          | Settings                      | References                    | Note                           |
+|-------------|---------------|-------------------------------|-------------------------------|--------------------------------|
+| **id** | SERIAL | 🔑 PK, not null  |  | |
+| **user_id** | INTEGER | not null  | pdf_documents_user_id_fk | |
+| **file_name** | VARCHAR(255) | not null  |  | |
+| **file_path** | VARCHAR(255) | not null  |  | |
+| **file_size** | INTEGER | not null  |  | |
+| **upload_date** | TIMESTAMP | not null , default: CURRENT_TIMESTAMP |  | |
+| **status** | VARCHAR(50) | not null , default: в очереди |  | |
+| **classification** | VARCHAR(50) | not null  |  | |
+| **metadata** | JSONB | not null  |  | | 
+
+
+### pdf_processing_history
+
+| Name        | Type          | Settings                      | References                    | Note                           |
+|-------------|---------------|-------------------------------|-------------------------------|--------------------------------|
+| **id** | SERIAL | 🔑 PK, not null  |  | |
+| **document_id** | INTEGER | not null  | pdf_processing_history_document_id_fk | |
+| **status** | VARCHAR(50) | not null  |  | |
+| **timestamp** | TIMESTAMP | not null , default: CURRENT_TIMESTAMP |  | |
+| **log** | TEXT | not null  |  | | 
+
+
+## Отношения
+
+- **pdf_documents to users**: один-ко-многим
+- **pdf_processing_history to pdf_documents**: один-ко-многим
 
 ## Структура проекта
 
@@ -121,3 +171,4 @@ uvicorn app.main:app --reload
 ## Заключение
 
 Проект **inPDFile** предоставляет удобный инструмент для классификации PDF-документов, позволяя эффективно определять, является ли документ официальным. Система использует современные методы машинного обучения для анализа документа, обеспечивая высокую точность классификации.
+
