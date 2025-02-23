@@ -1,4 +1,5 @@
 from typing import ClassVar
+
 from pydantic_settings import BaseSettings
 
 
@@ -13,13 +14,14 @@ class Settings(BaseSettings):
     def DATABASE_URL(self):
         return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
 
-    SMTP_HOST: str
-    SMTP_PORT: int
-    SMTP_USER: str
-    SMTP_PASS: str
-
     SECRET_KEY: str
     ALGORITHM: str
+
+    POSTGRES_DB: str
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+
+    LOG_LEVEL: str
 
     class Config:
         env_file = ".env"
