@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from sqlalchemy import (
     JSON,
     Boolean,
@@ -12,32 +12,41 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from app.database import Base
+from sqlalchemy.sql import func
 
 
 class Users(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, nullable=False)
-    email = Column(String, nullable=False)
+    email = Column(String, unique=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     is_verified = Column(Boolean, nullable=False, default=False)
-    confirmations = relationship("UserConfirmation", back_populates="user")
-    registration_date = Column(DateTime, default=datetime.now(datetime.timezone.utc))
-    last_login_date = Column(DateTime, default=datetime.now(datetime.timezone.utc))
+    registration_date = Column(DateTime, default=datetime.utcnow)
+    last_login_date = Column(DateTime, default=datetime.utcnow)
     is_active = Column(Boolean, default=True)
     is_superuser = Column(Boolean, default=False)
+
+    # Связь один ко многим
+    confirmations = relationship(
+        "UserConfirmation", back_populates="user", cascade="all, delete-orphan"
+    )
 
 
 class UserConfirmation(Base):
     __tablename__ = "user_confirmations"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    confirmation_code = Column(
-        String, unique=True, index=True, nullable=False
-    )  # уникальный код подтверждения, который будет отправлен пользователю на email.
-    created_at = Column(DateTime, default=datetime.now(datetime.timezone.utc))
-    expires_at = Column(DateTime, nullable=False)
+    user_id = Column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    confirmation_code = Column(String, unique=True, index=True, nullable=False)
+    created_at = Column(DateTime, default=func.now())
+    expires_at = Column(
+        DateTime,
+        nullable=False,
+        default=lambda: datetime.utcnow() + timedelta(minutes=15),
+    )
     is_used = Column(Boolean, default=False)
 
-    user = relationship("User", back_populates="confirmations")
+    user = relationship("Users", back_populates="confirmations")

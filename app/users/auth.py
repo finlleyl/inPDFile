@@ -30,3 +30,6 @@ async def authenticate_user(email: EmailStr, password: str):
     if not user and not verify_password(password, user.hashed_password):
         return None
     return user
+
+async def send_confirmation_email(email, code):
+    pass

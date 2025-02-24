@@ -1,10 +1,16 @@
-import datetime
+from datetime import datetime, timedelta, timezone
 import uuid
 from fastapi import APIRouter, Depends, Response
-from app.users.auth import authenticate_user, get_password_hash, create_acces_token
+from app.database import SessionManager
+from app.users.auth import (
+    authenticate_user,
+    get_password_hash,
+    create_acces_token,
+    send_confirmation_email,
+)
 from app.users.dao import UsersDAO
 from app.users.dependencies import get_current_admin_user, get_current_user
-from app.users.models import Users
+from app.users.models import UserConfirmation, Users
 from app.users.schemas import SUserAuth
 from app.exceptions import UserAlreadyExistsException, IncorrectEmailOrPasswordException
 
@@ -16,25 +22,28 @@ router = APIRouter(
 
 @router.post("/register")
 async def register_user(user_data: SUserAuth):
-    existing_user = await UsersDAO.find_one_or_none(email=user_data.email)
-    if existing_user:
-        raise UserAlreadyExistsException
-    hashed_password = get_password_hash(user_data.password)
-    new_user = await UsersDAO.add(
-        email=user_data.email, hashed_password=hashed_password
-    )
+    async with SessionManager() as session:
+        existing_user = await UsersDAO.find_one_or_none(email=user_data.email)
+        if existing_user:
+            raise UserAlreadyExistsException
 
-    code = str(uuid.uuid4())
-    expires_at = datetime.utcnow() + datetime.timedelta(minutes=15)
+        hashed_password = get_password_hash(user_data.password)
+        new_user = Users(email=user_data.email, hashed_password=hashed_password)
+        session.add(new_user)
+        await session.flush()
 
-    confirmation = UserConfirmation(
-        user_id=new_user.id, confirmation_code=code, expires_at=expires_at
-    )
-    await UsersDAO.add_confirmation(confirmation)
+        confirmation_code = str(uuid.uuid4())
 
-    await send_confirmation_email(new_user.email, code)
+        confirmation = UserConfirmation(
+            user_id=new_user.id, confirmation_code=confirmation_code
+        )
+        session.add(confirmation)
 
-    return new_user
+        await send_confirmation_email(user_data.email, confirmation_code)
+
+    return {
+        "message": "User registered successfully. Please check your email for confirmation."
+    }
 
 
 @router.post("/confirm")
