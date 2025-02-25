@@ -1,7 +1,7 @@
 from app.dao.base import BaseDAO
 from app.users.models import Users
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.users.models import UserConfirmation
+from app.users.models import UserConfirmations
 from app.database import async_session_maker
 from typing import AsyncGenerator
 
@@ -9,10 +9,14 @@ from typing import AsyncGenerator
 class UsersDAO(BaseDAO):
     model = Users
 
+
+class UserConfirmationDAO(BaseDAO):
+    model = UserConfirmations
+
     @classmethod
     async def add_confirmation(
-        confirmation: UserConfirmation, session: AsyncSession
-    ) -> UserConfirmation:
+        cls, confirmation: UserConfirmations, session: AsyncSession
+    ) -> UserConfirmations:
         """
         Добавляет объект подтверждения пользователя в базу данных с использованием переданной сессии.
         """

@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+import random
 from passlib.context import CryptContext
 from jose import jwt
 from pydantic import EmailStr
@@ -27,9 +28,14 @@ def create_acces_token(data: dict) -> str:
 
 async def authenticate_user(email: EmailStr, password: str):
     user = await UsersDAO.find_one_or_none(email=email)
-    if not user and not verify_password(password, user.hashed_password):
+    if not user or not verify_password(password, user.hashed_password):
         return None
     return user
 
+
 async def send_confirmation_email(email, code):
     pass
+
+
+async def generate_confirmation_code() -> str:
+    return str(random.randint(1, 9999)).zfill(4)

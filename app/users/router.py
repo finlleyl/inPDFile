@@ -1,5 +1,4 @@
-from datetime import datetime, timedelta, timezone
-import uuid
+from datetime import datetime
 from fastapi import APIRouter, Depends, Response
 from app.database import SessionManager
 from app.users.auth import (
@@ -8,11 +7,12 @@ from app.users.auth import (
     create_acces_token,
     send_confirmation_email,
 )
-from app.users.dao import UsersDAO
-from app.users.dependencies import get_current_admin_user, get_current_user
-from app.users.models import UserConfirmation, Users
+from app.users.dao import UserConfirmationDAO, UsersDAO
+from app.users.dependencies import get_current_user
+from app.users.models import UserConfirmations, Users
 from app.users.schemas import SUserAuth
 from app.exceptions import UserAlreadyExistsException, IncorrectEmailOrPasswordException
+from app.users.auth import generate_confirmation_code
 
 router = APIRouter(
     prefix="/auth",
@@ -22,28 +22,37 @@ router = APIRouter(
 
 @router.post("/register")
 async def register_user(user_data: SUserAuth):
+    # Проверяем существование пользователя
+    existing_user = await UsersDAO.find_one_or_none(email=user_data.email)
+    if existing_user:
+        raise UserAlreadyExistsException
+
     async with SessionManager() as session:
-        existing_user = await UsersDAO.find_one_or_none(email=user_data.email)
-        if existing_user:
-            raise UserAlreadyExistsException
-
+        # Хешируем пароль
         hashed_password = get_password_hash(user_data.password)
-        new_user = Users(email=user_data.email, hashed_password=hashed_password)
-        session.add(new_user)
-        await session.flush()
 
-        confirmation_code = str(uuid.uuid4())
-
-        confirmation = UserConfirmation(
-            user_id=new_user.id, confirmation_code=confirmation_code
+        # Создаем пользователя через DAO
+        user_id = await UsersDAO.add(
+            session=session, email=user_data.email, hashed_password=hashed_password
         )
-        session.add(confirmation)
 
+        # Генерируем код подтверждения
+        confirmation_code = await generate_confirmation_code()
+        confirmation = UserConfirmations(
+            user_id=user_id, confirmation_code=confirmation_code
+        )
+        # Создаем запись подтверждения через DAO
+        await UserConfirmationDAO().add_confirmation(confirmation, session)
+
+        # Отправляем email с подтверждением
         await send_confirmation_email(user_data.email, confirmation_code)
 
-    return {
-        "message": "User registered successfully. Please check your email for confirmation."
-    }
+        await session.commit()
+
+        return {
+            "message": "User registered successfully. Please check your email for confirmation.",
+            "user_id": user_id,
+        }
 
 
 @router.post("/confirm")
@@ -81,5 +90,17 @@ async def read_me(current_user: Users = Depends(get_current_user)):
 
 
 @router.get("/all_users")
-async def read_all_users(current_user: Users = Depends(get_current_admin_user)):
+async def read_all_users(current_user: Users = Depends(get_current_user)):
     return await UsersDAO.find_all()
+
+
+@router.delete("/delete")
+async def delete_me(
+    response: Response, currnet_user: Users = Depends(get_current_user)
+):
+    await UsersDAO.delete(id=currnet_user.id)
+    response.delete_cookie("pdf_access_token")
+    return {
+        "message": "User deleted successfully",
+        "user_id": currnet_user.id,
+    }

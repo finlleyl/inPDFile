@@ -12,7 +12,7 @@ from app.exceptions import (
 
 
 def get_token(request: Request) -> dict:
-    token = request.cookies.get("booking_access_token")
+    token = request.cookies.get("pdf_access_token")
     if not token:
         raise TokenNotFoundException
     return token
