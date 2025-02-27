@@ -4,19 +4,29 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.users.router import router as router_users
+from app.pdf.router import router as router_pdf
 from app.logger import logger
 from app.tasks.cleanup import scheduler, setup_scheduler
+from app.config import settings
+from motor.motor_asyncio import AsyncIOMotorClient
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-   
+
     startup_time = time.strftime("%Y-%m-%d %H:%M:%S")
     logger.info("Application startup", extra={"startup_time": startup_time})
-    setup_scheduler()  
+    setup_scheduler()
+    try:
+        app.mongodb_client = AsyncIOMotorClient(settings.MONGODB_URL)
+        app.mongodb = app.mongodb_client[settings.MONGO_INITDB_DB_NAME]
+    except Exception as e:
+        logger.error(f"Error during connection to MongoDB: {str(e)}", exc_info=True)
+
     yield
-    
-    scheduler.shutdown()  
+
+    app.mongodb_client.close()
+    scheduler.shutdown()
     shutdown_time = time.strftime("%Y-%m-%d %H:%M:%S")
     logger.info("Application shutdown", extra={"shutdown_time": shutdown_time})
 
@@ -24,7 +34,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 app.include_router(router_users)
-
+app.include_router(router_pdf)
 
 origins = [
     "http://localhost",
