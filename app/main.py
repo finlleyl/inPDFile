@@ -18,7 +18,11 @@ async def lifespan(app: FastAPI):
     logger.info("Application startup", extra={"startup_time": startup_time})
     setup_scheduler()
     try:
-        app.mongodb_client = AsyncIOMotorClient(settings.MONGODB_URL)
+        app.mongodb_client = AsyncIOMotorClient(
+            settings.MONGODB_URL,
+            maxPoolSize=100,
+            minPoolSize=10,
+        )
         app.mongodb = app.mongodb_client[settings.MONGO_INITDB_DB_NAME]
     except Exception as e:
         logger.error(f"Error during connection to MongoDB: {str(e)}", exc_info=True)

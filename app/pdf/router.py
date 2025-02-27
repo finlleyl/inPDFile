@@ -41,33 +41,35 @@ async def upload_pdf(
     return {"file_id": str(file_id)}
 
 
-@router.get("/dowload/{file_id}")
+@router.get("/download/{file_id}")
 async def download_pdf(file_id: str, request: Request):
     fs = AsyncIOMotorGridFSBucket(request.app.mongodb)
 
     try:
         file_id = ObjectId(file_id)
         grid_out = await fs.open_download_stream(file_id)
-        content = await grid_out.read()
 
-        # Получение имени файла из метаданных или использование default.pdf
+        # Получаем имя файла
         filename = grid_out.filename or "default.pdf"
+        filename_encoded = urllib.parse.quote(filename)
+        content_disposition = f"attachment; filename*=UTF-8''{filename_encoded}"
 
-        # Проверка на наличие нелатинских символов
-        if re.search(r"[^a-zA-Z0-9._-]", filename):
-            # Кодирование имени файла
-            filename_encoded = urllib.parse.quote(filename)
-            content_disposition = f"attachment; filename*=UTF-8''{filename_encoded}"
-        else:
-            content_disposition = f'attachment; filename="{filename}"'
+        # Генератор для потоковой передачи
+        async def chunk_generator():
+            while True:
+                chunk = await grid_out.readchunk()
+                if not chunk:
+                    break
+                yield chunk
 
         return StreamingResponse(
-            io.BytesIO(content),
+            chunk_generator(),
             media_type="application/pdf",
             headers={"Content-Disposition": content_disposition},
         )
+
     except Exception as e:
-        print(f"An error occurred: {e}")
+        logger.error(f"Error downloading file {file_id}: {str(e)}", exc_info=True)
         raise HTTPException(status_code=404, detail="File not found")
 
 

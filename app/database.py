@@ -2,6 +2,7 @@ from sqlalchemy import NullPool
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncAttrs, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase, declared_attr
 from app.config import settings
+from app.logger import logger
 
 if settings.MODE == "TEST":
     DATABASE_URL = settings.TEST_DATABASE_URL
@@ -10,9 +11,13 @@ else:
     DATABASE_URL = settings.DATABASE_URL
     DATABASE_PARAMS = {}
 
-engine = create_async_engine(DATABASE_URL, **DATABASE_PARAMS)
 
-async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
+try:
+    engine = create_async_engine(DATABASE_URL, **DATABASE_PARAMS)
+    async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
+except Exception as e:
+    logger.error(f"Failed to create database engine: {e}")
+    raise
 
 
 class Base(AsyncAttrs, DeclarativeBase):
