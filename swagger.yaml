@@ -1,0 +1,295 @@
+openapi: 3.0.0
+info:
+  title: API под INPDFILE
+  description: API для работы с пользователями, pdf файлами и стрктура бэкенда проекта команды InTeam
+  version: 1.0.0
+servers:
+  - url: 'http://localhost:8000'
+    description: Локальный сервер, на котором пока работает наш API
+
+paths:
+  /auth/register:
+    post:
+      tags: 
+        - Авторизация и аутентификация
+      summary: Авторизация пользователя
+      requestBody:
+        description: Данные для входа
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Успешный вход
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User registered successfully. Please check your email for confirmation.
+                  user_id:
+                    type: integer
+        '409':
+          description: Пользователь уже существует
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    example: "Пользователь уже существует"
+
+
+
+          
+          
+  /auth/confirm:
+    post:
+      tags:
+        - Авторизация и аутентификация
+      summary: Подтверждение пользователя
+      requestBody:
+        description: Данные для подтверждения
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: integer
+      responses:
+        '200':
+          description: Успешное подтверждение
+          content:
+            application/json:
+              schema:
+                type: boolean
+                example: true
+        
+        '401':
+          description: Ошибка подтверждения
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      detail:
+                        type: string
+                        example: "Подтверждения не существует"
+                  - type: object
+                    properties:
+                      detail:
+                        type: string
+                        example: "Подтверждение уже было использовано"
+                  - type: object
+                    properties:
+                      detail:
+                        type: string
+                        example: "Подтверждение уже просрочено"
+    
+  /auth/login:
+    post:
+      tags:
+        - Авторизация и аутентификация
+      summary: Вход пользователя
+      requestBody:
+        description: Данные для входа пользователя
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: test@mail.com
+                password:
+                  type: string
+                  example: test1234
+      responses:
+        '200':
+          description: Успешный вход
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ
+
+        '401':
+          description: Неправильная почта или пароль
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    example: "Неправильная почта или пароль"
+                
+
+
+
+  /auth/logout:
+    post:
+      tags:
+        - Авторизация и аутентификация
+      summary: Выход пользователя
+      responses:
+        '200':
+          description: Успешный выход
+          content:
+            application/json:
+              schema:
+                type: boolean
+                example: true
+                
+                
+                
+  /auth/me:
+    get:
+      tags:
+        - Авторизация и аутентификация
+      summary: Получение данных о пользователе
+      responses:
+        '200':
+          description: Информация о пользователе
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          description: Ошибка при валидации токена
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      detail:
+                        type: string
+                        example: "Токен не найден"
+                  - type: object
+                    properties:
+                      detail:
+                        type: string
+                        example: "Неверный формат токена"
+                  
+  /auth/delete:
+    delete:
+      tags:
+        - Авторизация и аутентификация
+      summary: Удаление пользователя
+      responses:
+        '200':
+          description: Удаление пользователя
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User deleted successfully"
+                  user_id:
+                    type: integer
+                    example: 1
+        '401':
+          description: Ошибка при валидации токена
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      detail:
+                        type: string
+                    example:
+                      detail: "Токен не найден"
+                  - type: object
+                    properties:
+                      detail:
+                        type: string
+                    example:
+                      detail: "Неверный формат токена"
+                      
+  /auth/all_users:
+    get:
+      tags:
+        - Авторизация и аутентификация
+      summary: Получение всех пользователей
+      responses:
+        '200':
+          description: Получение списка всех пользователей
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserResponse'
+        '401':
+          description: Ошибка при валидации токена
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      detail:
+                        type: string
+                    example:
+                      detail: "Токен не найден"
+                  - type: object
+                    properties:
+                      detail:
+                        type: string
+                    example:
+                      detail: "Неверный формат токена"
+components:
+  schemas:
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+        is_verified:
+          type: boolean
+          example: true
+        registration_date:
+          type: string
+          format: date-time
+          example: "2024-02-26T12:34:56Z"
+        last_login_date:
+          type: string
+          format: date-time
+          example: "2024-02-26T12:34:56Z"
+        is_active:
+          type: boolean
+          example: true
+        is_superuser:
+          type: boolean
+          example: false
+          
+          
+          
+          
+          
+          
+          
+          

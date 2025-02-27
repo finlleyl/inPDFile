@@ -11,7 +11,13 @@ from app.users.dao import UserConfirmationDAO, UsersDAO
 from app.users.dependencies import get_current_user
 from app.users.models import UserConfirmations, Users
 from app.users.schemas import SUserAuth
-from app.exceptions import UserAlreadyExistsException, IncorrectEmailOrPasswordException
+from app.exceptions import (
+    UserAlreadyExistsException,
+      IncorrectEmailOrPasswordException,
+        ConfirmationExpiredException,
+          ConfirmationDoesNotExistException,
+            ConfirmationAlreadyUsed
+)
 from app.users.auth import generate_confirmation_code
 
 router = APIRouter(

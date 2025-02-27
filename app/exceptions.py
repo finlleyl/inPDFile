@@ -32,3 +32,18 @@ class TokenIncorrectFormatException(PdfException):
 
 class UserIsNotPresentException(PdfException):
     status_code = status.HTTP_401_UNAUTHORIZED
+
+
+
+class ConfirmationDoesNotExistException(PdfException):
+    status_code = status.HTTP_401_UNAUTHORIZED
+    detail = "Подтверждения не существует"
+
+class ConfirmationAlreadyUsed(PdfException):
+    status_code = status.HTTP_401_UNAUTHORIZED
+    detail = "Подтверждение уже было использовано"
+
+
+class ConfirmationExpiredException(PdfException):
+    status_code = status.HTTP_401_UNAUTHORIZED
+    detail = "Подтверждение уже просрочено"
