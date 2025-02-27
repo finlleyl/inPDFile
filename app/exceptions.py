@@ -29,15 +29,14 @@ class TokenIncorrectFormatException(PdfException):
     detail = "Неверный формат токена"
 
 
-
 class UserIsNotPresentException(PdfException):
     status_code = status.HTTP_401_UNAUTHORIZED
-
 
 
 class ConfirmationDoesNotExistException(PdfException):
     status_code = status.HTTP_401_UNAUTHORIZED
     detail = "Подтверждения не существует"
+
 
 class ConfirmationAlreadyUsed(PdfException):
     status_code = status.HTTP_401_UNAUTHORIZED
@@ -47,3 +46,8 @@ class ConfirmationAlreadyUsed(PdfException):
 class ConfirmationExpiredException(PdfException):
     status_code = status.HTTP_401_UNAUTHORIZED
     detail = "Подтверждение уже просрочено"
+
+
+class FileNotPDFException(PdfException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    detail = "Файл не является pdf"
