@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
 
-    LOG_LEVEL: str
+    LOG_LEVEL: Literal["DEBUG", "INFO", "WARN", "ERROR", "FATAL"]
 
     model_config = ConfigDict(env_file=".env")
 

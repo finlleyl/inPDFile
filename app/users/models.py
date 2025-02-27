@@ -41,7 +41,7 @@ class UserConfirmations(Base):
     user_id = Column(
         Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )
-    confirmation_code = Column(String, unique=True, index=True, nullable=False)
+    confirmation_code = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     expires_at = Column(
         DateTime, default=lambda: datetime.utcnow() + timedelta(minutes=15)

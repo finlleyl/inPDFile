@@ -1,23 +1,27 @@
-from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
 import time
-
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 
-from app.config import settings
-from app.database import engine
-from app.images.router import router as router_images
-from app.pages.router import router as router_pages
-from app.users.models import Users
 from app.users.router import router as router_users
+from app.logger import logger
+from app.tasks.cleanup import scheduler, setup_scheduler
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+   
+    startup_time = time.strftime("%Y-%m-%d %H:%M:%S")
+    logger.info("Application startup", extra={"startup_time": startup_time})
+    setup_scheduler()  
+    yield
+    
+    scheduler.shutdown()  
+    shutdown_time = time.strftime("%Y-%m-%d %H:%M:%S")
+    logger.info("Application shutdown", extra={"shutdown_time": shutdown_time})
 
 
-app = FastAPI()
-
+app = FastAPI(lifespan=lifespan)
 
 app.include_router(router_users)
 
@@ -40,3 +44,15 @@ app.add_middleware(
         "Authorization",
     ],
 )
+
+
+@app.middleware("http")
+async def add_process_time_header(request: Request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    process_time = time.time() - start_time
+    response.headers["X-Process-Time"] = str(process_time)
+    logger.info(
+        "Request execution time", extra={"process_time": round(process_time, 4)}
+    )
+    return response
