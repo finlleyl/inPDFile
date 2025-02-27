@@ -32,6 +32,7 @@ class Users(Base):
     confirmations = relationship(
         "UserConfirmations", back_populates="user", cascade="all, delete-orphan"
     )
+    documents = relationship("PdfDocuments", back_populates="user", cascade="all, delete-orphan")
 
 
 class UserConfirmations(Base):
