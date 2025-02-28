@@ -1,4 +1,4 @@
-version: '3.12.7'
+version: '3.8'
 services:
   postgres:
     image: postgres:17.4
@@ -35,7 +35,7 @@ services:
       context: .
     env_file:
       - .env-non-dev
-    command: alembic upgrade head && gunicorn app.main:app --workers 1 --worker-class uvicorn.workers.UvicornWorker --bind=0.0.0.0:8000
+    command: sh -c "alembic upgrade head && gunicorn app.main:app --workers 1 --worker-class uvicorn.workers.UvicornWorker --bind=0.0.0.0:8000"
     ports:
       - 9000:8000
     depends_on: 
