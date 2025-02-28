@@ -13,8 +13,8 @@ from os.path import dirname, abspath
 sys.path.insert(0, dirname(dirname(abspath(__file__))))
 from app.config import settings
 from app.database import Base
-from app.users.models import Users, UserConfirmations
 from app.pdf.models import PdfDocuments, PdfProcessingHistory
+from app.users.models import Users, UserConfirmations
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
