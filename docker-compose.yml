@@ -4,26 +4,59 @@ services:
     image: postgres:17.4
     container_name: postgres_db
     env_file:
-      - .env
+      - .env-non-dev
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     restart: unless-stopped
 
+  redis:
+    image: redis:7.4
+    container_name: pdf_redis
+    ports:
+      - 6379:6379
+
   mongodb:
     image: mongo:6-jammy
-    container_name: mongodb
+    container_name: mongo_db
     env_file:
-      - .env
+      - .env-non-dev
     ports:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
     restart: unless-stopped
+  
+  pdf:
+    image: pdf_image
+    container_name: pdf_app
+    build: 
+      context: .
+    env_file:
+      - .env-non-dev
+    command: alembic upgrade head && gunicorn app.main:app --workers 1 --worker-class uvicorn.workers.UvicornWorker --bind=0.0.0.0:8000
+    ports:
+      - 9000:8000
+    depends_on: 
+     - postgres
+     - redis
+     - mongodb
+
+  celery:
+    container_name: pdf_celery
+    build: 
+      context: .
+    command: celery --app=app.tasks.celery:celery worker -l INFO && celery --app=app.tasks.celery:celery flower
+    env_file:
+      - .env-non-dev
+    depends_on:
+    - redis
+
 
 volumes:
   pgdata:
     driver: local
   mongo-data:
     driver: local
+
