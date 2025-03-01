@@ -5,6 +5,11 @@ services:
     container_name: postgres_db
     env_file:
       - .env-non-dev
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5  
     ports:
       - "5432:5432"
     volumes:
@@ -39,9 +44,12 @@ services:
     ports:
       - 9000:8000
     depends_on: 
-     - postgres
-     - redis
-     - mongodb
+     postgres:
+      condition: service_healthy
+     redis:
+      condition: service_started
+     mongodb:
+      condition: service_started
 
   celery:
     container_name: pdf_celery
@@ -51,8 +59,10 @@ services:
     env_file:
       - .env-non-dev
     depends_on:
-    - redis
-    - postgres
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
 
 
 volumes:
