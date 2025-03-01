@@ -16,7 +16,7 @@ async def lifespan(app: FastAPI):
 
     startup_time = time.strftime("%Y-%m-%d %H:%M:%S")
     logger.info("Application startup", extra={"startup_time": startup_time})
-    setup_scheduler()
+    # setup_scheduler()
     try:
         app.mongodb_client = AsyncIOMotorClient(
             settings.MONGODB_URL,
@@ -30,7 +30,7 @@ async def lifespan(app: FastAPI):
     yield
 
     app.mongodb_client.close()
-    scheduler.shutdown()
+    # scheduler.shutdown()
     shutdown_time = time.strftime("%Y-%m-%d %H:%M:%S")
     logger.info("Application shutdown", extra={"shutdown_time": shutdown_time})
 

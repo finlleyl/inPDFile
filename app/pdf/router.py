@@ -6,6 +6,7 @@ from motor.motor_asyncio import AsyncIOMotorGridFSBucket
 from fastapi.responses import StreamingResponse
 from app.users.dependencies import get_current_user
 from app.users.models import Users
+from app.logger import logger
 import io
 import re
 import urllib
@@ -22,8 +23,8 @@ async def upload_pdf(
     file: UploadFile = File(...),
     user: Users = Depends(get_current_user),
 ):
-    if file.content_type != "application/pdf":
-        raise FileNotPDFException
+    # if file.content_type != "application/pdf":
+    # raise FileNotPDFException
 
     db = request.app.mongodb
     fs = AsyncIOMotorGridFSBucket(db)
@@ -42,7 +43,9 @@ async def upload_pdf(
 
 
 @router.get("/download/{file_id}")
-async def download_pdf(file_id: str, request: Request):
+async def download_pdf(
+    file_id: str, request: Request, user: Users = Depends(get_current_user)
+):
     fs = AsyncIOMotorGridFSBucket(request.app.mongodb)
 
     try:
@@ -74,7 +77,7 @@ async def download_pdf(file_id: str, request: Request):
 
 
 @router.get("/all_files/")
-async def list_files(request: Request):
+async def list_files(request: Request, user: Users = Depends(get_current_user)):
     try:
         db = request.app.mongodb
         fs = AsyncIOMotorGridFSBucket(db)
