@@ -14,7 +14,6 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 from app.database import Base
 from sqlalchemy.sql import func
-from app.pdf.models import PdfDocuments
 
 
 class Users(Base):
@@ -33,9 +32,7 @@ class Users(Base):
     confirmations = relationship(
         "UserConfirmations", back_populates="user", cascade="all, delete-orphan"
     )
-    documents = relationship(
-        "PdfDocuments", back_populates="user", cascade="all, delete-orphan"
-    )
+    documents = relationship("PdfDocuments", back_populates="user", cascade="all, delete-orphan")
 
 
 class UserConfirmations(Base):

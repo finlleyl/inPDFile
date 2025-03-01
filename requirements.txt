@@ -56,6 +56,7 @@ python-jose==3.3.0
 python-json-logger==3.2.1
 python-multipart==0.0.20
 PyYAML==6.0.2
+redis==5.2.1
 rich==13.9.4
 rich-toolkit==0.12.0
 rsa==4.9

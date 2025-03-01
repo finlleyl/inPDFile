@@ -47,11 +47,12 @@ services:
     container_name: pdf_celery
     build: 
       context: .
-    command: celery --app=app.tasks.celery:celery worker -l INFO && celery --app=app.tasks.celery:celery flower
+    command: sh -c "celery --app=app.tasks.celery:celery worker -l INFO && celery --app=app.tasks.celery:celery flower"
     env_file:
       - .env-non-dev
     depends_on:
     - redis
+    - postgres
 
 
 volumes:
