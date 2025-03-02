@@ -18,3 +18,10 @@ scrape_configs:
 
     static_configs:
       - targets: ['pdf:8000']
+
+  - job_name: 'node_expoter'
+  
+    scrape_interval: 5s
+
+    static_configs:
+      - targets: ['node_expoter:9100']

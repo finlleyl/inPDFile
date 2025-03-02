@@ -66,7 +66,6 @@ instrumentator = Instrumentator(
     should_respect_env_var=True,
     should_instrument_requests_inprogress=True,
     excluded_handlers=[".*admin.*", "/metrics"],
-    env_var_name="ENABLE_METRICS",
     inprogress_name="inprogress",
     inprogress_labels=True,
 )
