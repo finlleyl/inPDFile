@@ -1,14 +1,13 @@
-from datetime import date
-from app.database import engine, async_session_maker
-from sqlalchemy import and_, func, insert, select
 from app.dao.base import BaseDAO
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.pdf.models import PdfDocuments, PdfProcessingHistory
+from app.database import async_session_maker
+from typing import AsyncGenerator
 
 
-# class PdfDAO(BaseDAO):
-#     model = Pdf
+class PdfDocumentsDAO(BaseDAO):
+    model = PdfDocuments
 
-#     @classmethod
-#     async def add():
-        
-#         async with async_session_maker() as session:
-#             pass
+
+class PdfProcessingHistoryDAO(BaseDAO):
+    model = PdfProcessingHistory

@@ -10,6 +10,12 @@ from app.logger import logger
 import io
 import re
 import urllib
+from app.pdf.models import PdfDocuments, PdfProcessingHistory
+from sqlalchemy.exc import SQLAlchemyError
+from app.database import SessionManager
+from app.pdf.models import PdfDocuments, PdfProcessingHistory
+from app.pdf.dao import PdfDocumentsDAO, PdfProcessingHistoryDAO
+
 
 router = APIRouter(
     prefix="/pdf",
@@ -23,24 +29,52 @@ async def upload_pdf(
     file: UploadFile = File(...),
     user: Users = Depends(get_current_user),
 ):
-    # if file.content_type != "application/pdf":
-    # raise FileNotPDFException
-
     db = request.app.mongodb
     fs = AsyncIOMotorGridFSBucket(db)
 
-    file_id = await fs.upload_from_stream(
-        file.filename,
-        file.file,
-        metadata={
-            "user_id": user.id,
-            "content_type": file.content_type,
-            "timestamp": datetime.now(),
-        },
-    )
+    async with SessionManager() as session:
+        try:
+            file_id = await fs.upload_from_stream(
+                file.filename,
+                file.file,
+                metadata={
+                    "user_id": user.id,
+                    "content_type": file.content_type,
+                    "timestamp": datetime.utcnow(),
+                },
+            )
 
-    return {"file_id": str(file_id)}
+            pdf_document = PdfDocuments(
+                user_id=user.id,
+                file_name=file.filename,
+                file_path=str(file_id),
+                file_size=file.size,
+                upload_date=datetime.utcnow(),
+                status="в очереди",
+                classification="не определена",
+                document_metadata={},
+                document_type="не определен",
+                has_signature=False,
+                has_stamp=False,
+            )
+            session.add(pdf_document)
+            await session.flush()
 
+            history_entry = PdfProcessingHistory(
+                document_id=pdf_document.id,
+                status="загружен",
+                timestamp=datetime.utcnow(),
+                log="Файл успешно загружен в систему.",
+            )
+            session.add(history_entry)
+
+            return {"file_id": str(file_id), "document_id": pdf_document.id}
+
+        except SQLAlchemyError as e:
+            await session.rollback()
+            return {"error": "Ошибка при сохранении данных в БД", "details": str(e)}
+        except Exception as e:
+            return {"error": "Ошибка загрузки файла", "details": str(e)}
 
 @router.get("/download/{file_id}")
 async def download_pdf(
@@ -108,3 +142,40 @@ async def list_files(request: Request, user: Users = Depends(get_current_user)):
         return files
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/history/")
+async def get_users_history(request: Request, user: Users = Depends(get_current_user)):
+    async with SessionManager() as session:
+        try:
+            results = await PdfDocumentsDAO.find_all(user_id=int(user.id))
+            final_history = []
+
+            for result in results:
+                new_item = {}
+
+                new_item["file_name"] = result["file_name"]
+                cur_size = int(result["file_size"]) / (1024 * 1024)
+                new_item["file_size"] = f"{cur_size:.2f} MB"
+                new_item["file_path"] = result["file_path"]
+                new_item["status"] = result["status"]
+                new_item["classification"] = result["classification"]
+                new_item["document_type"] = result["document_type"]
+
+                if isinstance(result["upload_date"], datetime):  # Проверяем тип данных
+                    formatted_date = result["upload_date"].strftime("%d.%m.%Y %H:%M:%S")
+                else:
+                    date_str = str(result["upload_date"])
+                    date_obj = datetime.fromisoformat(date_str)
+                    formatted_date = date_obj.strftime("%d.%m.%Y %H:%M:%S")
+
+                new_item["upload_date"] = formatted_date
+
+                new_item["has_signature"] = "Имеет подпись" if result["has_signature"] else "Не имеет подпись"
+                new_item["has_stamp"] = "Имеет печать" if result["has_stamp"] else "Не имеет печать"
+
+                final_history.append(new_item)
+
+            return final_history
+
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
