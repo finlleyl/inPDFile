@@ -15,6 +15,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.database import SessionManager
 from app.pdf.models import PdfDocuments, PdfProcessingHistory
 from app.pdf.dao import PdfDocumentsDAO, PdfProcessingHistoryDAO
+from app.dao.mongodb_dao import MongoDBStorageDAO
 
 
 router = APIRouter(
@@ -29,12 +30,11 @@ async def upload_pdf(
     file: UploadFile = File(...),
     user: Users = Depends(get_current_user),
 ):
-    db = request.app.mongodb
-    fs = AsyncIOMotorGridFSBucket(db)
+    mongo_dao = MongoDBStorageDAO(request.app.mongodb)
 
     async with SessionManager() as session:
         try:
-            file_id = await fs.upload_from_stream(
+            file_id = await mongo_dao.upload_file(
                 file.filename,
                 file.file,
                 metadata={
@@ -47,7 +47,7 @@ async def upload_pdf(
             pdf_document = PdfDocuments(
                 user_id=user.id,
                 file_name=file.filename,
-                file_path=str(file_id),
+                file_path=file_id,
                 file_size=file.size,
                 upload_date=datetime.utcnow(),
                 status="в очереди",
@@ -68,7 +68,7 @@ async def upload_pdf(
             )
             session.add(history_entry)
 
-            return {"file_id": str(file_id), "document_id": pdf_document.id}
+            return {"file_id": file_id, "document_id": pdf_document.id}
 
         except SQLAlchemyError as e:
             await session.rollback()
@@ -76,72 +76,43 @@ async def upload_pdf(
         except Exception as e:
             return {"error": "Ошибка загрузки файла", "details": str(e)}
 
+
 @router.get("/download/{file_id}")
 async def download_pdf(
     file_id: str, request: Request, user: Users = Depends(get_current_user)
 ):
-    fs = AsyncIOMotorGridFSBucket(request.app.mongodb)
+    mongo_dao = MongoDBStorageDAO(request.app.mongodb)
+    grid_out = await mongo_dao.download_file(file_id)
 
-    try:
-        file_id = ObjectId(file_id)
-        grid_out = await fs.open_download_stream(file_id)
+    filename = grid_out.filename or "default.pdf"
+    filename_encoded = urllib.parse.quote(filename)
+    content_disposition = f"attachment; filename*=UTF-8''{filename_encoded}"
 
-        # Получаем имя файла
-        filename = grid_out.filename or "default.pdf"
-        filename_encoded = urllib.parse.quote(filename)
-        content_disposition = f"attachment; filename*=UTF-8''{filename_encoded}"
+    async def chunk_generator():
+        while True:
+            chunk = await grid_out.readchunk()
+            if not chunk:
+                break
+            yield chunk
 
-        # Генератор для потоковой передачи
-        async def chunk_generator():
-            while True:
-                chunk = await grid_out.readchunk()
-                if not chunk:
-                    break
-                yield chunk
-
-        return StreamingResponse(
-            chunk_generator(),
-            media_type="application/pdf",
-            headers={"Content-Disposition": content_disposition},
-        )
-
-    except Exception as e:
-        logger.error(f"Error downloading file {file_id}: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=404, detail="File not found")
+    return StreamingResponse(
+        chunk_generator(),
+        media_type="application/pdf",
+        headers={"Content-Disposition": content_disposition},
+    )
 
 
 @router.get("/all_files/")
-async def list_files(request: Request, user: Users = Depends(get_current_user)):
-    try:
-        db = request.app.mongodb
-        fs = AsyncIOMotorGridFSBucket(db)
-        # Извлечение всех документов из коллекции fs.files
-        cursor = fs.find({})
-        files = await cursor.to_list(length=None)
-
-        # Преобразование ObjectId в строку для JSON-сериализации
-        for file in files:
-            file["_id"] = str(file["_id"])
-
-        return files
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+async def list_all_files(request: Request, user: Users = Depends(get_current_user)):
+    mongo_dao = MongoDBStorageDAO(request.app.mongodb)
+    return await mongo_dao.list_all_files()
 
 
 @router.get("/files/")
 async def list_files(request: Request, user: Users = Depends(get_current_user)):
-    try:
-        db = request.app.mongodb
-        fs = AsyncIOMotorGridFSBucket(db)
-        cursor = fs.find({"metadata.user_id": user.id})
-        files = await cursor.to_list(length=None)
+    mongo_dao = MongoDBStorageDAO(request.app.mongodb)
+    return await mongo_dao.list_user_files(user.id)
 
-        for file in files:
-            file["_id"] = str(file["_id"])
-
-        return files
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/history/")
 async def get_users_history(request: Request, user: Users = Depends(get_current_user)):
@@ -170,8 +141,12 @@ async def get_users_history(request: Request, user: Users = Depends(get_current_
 
                 new_item["upload_date"] = formatted_date
 
-                new_item["has_signature"] = "Имеет подпись" if result["has_signature"] else "Не имеет подпись"
-                new_item["has_stamp"] = "Имеет печать" if result["has_stamp"] else "Не имеет печать"
+                new_item["has_signature"] = (
+                    "Имеет подпись" if result["has_signature"] else "Не имеет подпись"
+                )
+                new_item["has_stamp"] = (
+                    "Имеет печать" if result["has_stamp"] else "Не имеет печать"
+                )
 
                 final_history.append(new_item)
 

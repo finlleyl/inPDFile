@@ -1,7 +1,7 @@
 from typing import ClassVar, Literal
 
 from pydantic import ConfigDict
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
@@ -18,6 +18,11 @@ class Settings(BaseSettings):
     TEST_DB_USER: str
     TEST_DB_PASS: str
     TEST_DB_NAME: str
+
+    TEST_MONGO_INITDB_DB_HOST: str
+
+    REDIS_HOST: str
+    REDIS_PORT: int
 
     MONGO_INITDB_DB_HOST: str
     MONGO_INITDB_DB_PORT: int
@@ -37,6 +42,10 @@ class Settings(BaseSettings):
     def MONGODB_URL(self):
         return f"mongodb://{self.MONGO_INITDB_ROOT_USERNAME}:{self.MONGO_INITDB_ROOT_PASSWORD}@{self.MONGO_INITDB_DB_HOST}:{self.MONGO_INITDB_DB_PORT}/?authSource={self.MONGO_INITDB_ROOT_USERNAME}"
 
+    @property
+    def TEST_MONGODB_URL(self):
+        return f"mongodb://{self.MONGO_INITDB_ROOT_USERNAME}:{self.MONGO_INITDB_ROOT_PASSWORD}@{self.TEST_MONGO_INITDB_DB_HOST}:{self.MONGO_INITDB_DB_PORT}/?authSource={self.MONGO_INITDB_ROOT_USERNAME}"
+
     SECRET_KEY: str
     ALGORITHM: str
 
@@ -50,5 +59,3 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
-
-# settings.DATABASE_URL = f"postgresql+asyncpg://{settings.DB_USER}:{settings.DB_PASS}@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}"

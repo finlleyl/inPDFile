@@ -3,7 +3,7 @@ services:
     image: postgres:17.4
     container_name: postgres_db
     env_file:
-      - .env-non-dev
+      - .env
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
@@ -25,7 +25,7 @@ services:
     image: mongo:6-jammy
     container_name: mongo_db
     env_file:
-      - .env-non-dev
+      - .env
     ports:
       - "27017:27017"
     volumes:
@@ -38,7 +38,7 @@ services:
     build: 
       context: .
     env_file:
-      - .env-non-dev
+      - .env
     command: sh -c "alembic upgrade head && gunicorn app.main:app --workers 1 --worker-class uvicorn.workers.UvicornWorker --bind=0.0.0.0:8000"
     ports:
       - 8000:8000
@@ -58,7 +58,7 @@ services:
       context: .
     command: sh -c "celery --app=app.tasks.celery:celery worker -l INFO && celery --app=app.tasks.celery:celery flower"
     env_file:
-      - .env-non-dev
+      - .env
     depends_on:
       postgres:
         condition: service_healthy

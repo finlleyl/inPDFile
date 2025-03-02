@@ -1,16 +1,14 @@
 import asyncio
 import json
 import httpx
+import motor
+from motor.motor_asyncio import AsyncIOMotorClient
 import pytest
 from sqlalchemy import insert
 from app.database import Base, async_session_maker, engine
 from app.config import settings
 from app.main import app as fast_apiapp
-
 from app.users.models import Users
-
-
-from fastapi.testclient import TestClient
 from httpx import AsyncClient
 
 
@@ -44,7 +42,11 @@ def event_loop(request):
 
 @pytest.fixture(scope="function")
 async def ac():
-    async with AsyncClient(transport=httpx.ASGITransport(app=fast_apiapp), base_url="http://test", follow_redirects=True) as ac:
+    async with AsyncClient(
+        transport=httpx.ASGITransport(app=fast_apiapp),
+        base_url="http://test",
+        follow_redirects=True,
+    ) as ac:
         yield ac
 
 
@@ -52,3 +54,16 @@ async def ac():
 async def session():
     async with async_session_maker() as session:
         yield session
+
+
+@pytest.fixture(scope="function")
+async def mongodb():
+    client = AsyncIOMotorClient(
+        settings.TEST_MONGODB_URL,
+        maxPoolSize=100,
+        minPoolSize=10,
+    )
+    mongodb = client[settings.MONGO_INITDB_DB_NAME]
+    yield mongodb
+    await client.drop_database(settings.MONGO_INITDB_DB_NAME)
+    client.close()

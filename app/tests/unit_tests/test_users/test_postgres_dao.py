@@ -90,4 +90,3 @@ async def test_delete():
    await UsersDAO.delete(email="test@example.com")
    new_user_count = len(await UsersDAO.find_all())
    assert new_user_count == user_count - 1
-
