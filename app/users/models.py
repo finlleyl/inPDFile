@@ -1,20 +1,15 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from sqlalchemy import (
-    JSON,
     Boolean,
     Column,
-    Computed,
-    Date,
     DateTime,
     ForeignKey,
     Integer,
     String,
-    text,
 )
 from sqlalchemy.orm import relationship
 from app.database import Base
 from sqlalchemy.sql import func
-from app.pdf.models import PdfDocuments
 
 
 class Users(Base):

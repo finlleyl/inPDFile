@@ -1,7 +1,6 @@
 import asyncio
 import json
 import httpx
-import motor
 from motor.motor_asyncio import AsyncIOMotorClient
 import pytest
 from sqlalchemy import insert

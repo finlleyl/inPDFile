@@ -6,10 +6,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.users.router import router as router_users
 from app.pdf.router import router as router_pdf
 from app.logger import logger
-from app.tasks.cleanup import scheduler, setup_scheduler
 from app.config import settings
 from motor.motor_asyncio import AsyncIOMotorClient
-from prometheus_fastapi_instrumentator import Instrumentator, metrics
+from prometheus_fastapi_instrumentator import Instrumentator
 
 
 @asynccontextmanager

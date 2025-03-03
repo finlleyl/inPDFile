@@ -1,20 +1,14 @@
 from datetime import datetime
-from bson import ObjectId
 from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
-from app.exceptions import FileNotPDFException
-from motor.motor_asyncio import AsyncIOMotorGridFSBucket
 from fastapi.responses import StreamingResponse
 from app.users.dependencies import get_current_user
 from app.users.models import Users
-from app.logger import logger
-import io
-import re
 import urllib
 from app.pdf.models import PdfDocuments, PdfProcessingHistory
 from sqlalchemy.exc import SQLAlchemyError
 from app.database import SessionManager
 from app.pdf.models import PdfDocuments, PdfProcessingHistory
-from app.pdf.dao import PdfDocumentsDAO, PdfProcessingHistoryDAO
+from app.pdf.dao import PdfDocumentsDAO
 from app.dao.mongodb_dao import MongoDBStorageDAO
 
 
