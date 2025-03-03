@@ -51,3 +51,8 @@ class ConfirmationExpiredException(PdfException):
 class FileNotPDFException(PdfException):
     status_code = status.HTTP_400_BAD_REQUEST
     detail = "Файл не является pdf"
+
+
+class ConfirmationEmailNotSentException(PdfException):
+    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    detail = "Ошибка при отправке письма подтверждения"

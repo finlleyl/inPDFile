@@ -55,6 +55,11 @@ class Settings(BaseSettings):
 
     LOG_LEVEL: Literal["DEBUG", "INFO", "WARN", "ERROR", "FATAL"]
 
+    SMTP_HOST: str
+    SMTP_PORT: int
+    SMTP_USER: str
+    SMTP_PASS: str
+
     model_config = ConfigDict(env_file=".env")
 
 

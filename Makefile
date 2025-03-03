@@ -6,7 +6,8 @@ LINTER_DIRS=app
 FORMAT_DIRS=app
 AUTOFLAKE_OPTS = -i -r --verbose --ignore-init-module-imports --remove-all-unused-imports --expand-star-imports --exclude=migration
 
-all-linters: autoflake flake8 pylint
+lint: autoflake flake8 pylint
+com: autoflake flake8 pylint pytest
 
 autoflake:
 	$(PYTHON_EXEC) -m autoflake $(AUTOFLAKE_OPTS) $(FORMAT_DIRS)
@@ -31,5 +32,8 @@ pytest:
 
 pytest-cov:
 	pytest --cov=app -vv app/tests
+
+b:
+	docker-compose up --build
 
 .PHONY: all-linters mypy flake8 pylint toml-sort autoflake app pytest pytest-cov

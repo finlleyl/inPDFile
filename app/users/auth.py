@@ -41,16 +41,6 @@ async def authenticate_user(email: EmailStr, password: str):
         raise
 
 
-async def send_confirmation_email(email, _code):
-    try:
-        logger.info("Confirmation email sent", extra={"email": email})
-    except Exception as e:
-        logger.error(
-            "Error sending confirmation email", extra={"email": email, "error": str(e)}
-        )
-        raise
-
-
 async def generate_confirmation_code() -> str:
     try:
         code = str(random.randint(1, 9999)).zfill(4)

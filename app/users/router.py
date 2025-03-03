@@ -1,17 +1,14 @@
 from datetime import datetime
 from fastapi import APIRouter, Depends, Response
 from app.database import SessionManager
-from app.users.auth import (
-    authenticate_user,
-    get_password_hash,
-    create_acces_token,
-    send_confirmation_email,
-)
+from app.tasks.tasks import send_registration_confirmation
+from app.users.auth import authenticate_user, get_password_hash, create_acces_token
 from app.users.dao import UserConfirmationDAO, UsersDAO
 from app.users.dependencies import get_current_user
 from app.users.models import UserConfirmations, Users
 from app.users.schemas import SUserAuth
 from app.exceptions import (
+    ConfirmationEmailNotSentException,
     UserAlreadyExistsException,
     IncorrectEmailOrPasswordException,
     ConfirmationExpiredException,
@@ -48,7 +45,15 @@ async def register_user(user_data: SUserAuth):
                 user_id=user_id, confirmation_code=confirmation_code
             )
             await UserConfirmationDAO().add_confirmation(confirmation, session)
-            await send_confirmation_email(user_data.email, confirmation_code)
+            try:
+                send_registration_confirmation.delay(user_data.email, confirmation_code)
+            except Exception as e:
+                logger.error(
+                    "Error during sending confirmation email",
+                    extra={"email": user_data.email, "error": str(e)},
+                )
+                raise ConfirmationEmailNotSentException
+
             await session.commit()
             logger.info(
                 "New user registered successfully", extra={"email": user_data.email}
