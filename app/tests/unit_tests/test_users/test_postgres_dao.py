@@ -3,14 +3,14 @@ from app.users.dao import UsersDAO
 
 
 @pytest.mark.parametrize(
-    "id, email, exists",
+    "user_id, email, exists",
     [
         (1, "user@example.com", True),
         (2, "user1@example.com", True),
         (1000, "None", False),
     ],
 )
-async def test_find_one_or_none(id, email, exists):
+async def test_find_one_or_none(user_id, email, exists):
     """
     Тестирование метода find_one_or_none класса UsersDAO.
 
@@ -22,11 +22,11 @@ async def test_find_one_or_none(id, email, exists):
     email (str): email пользователя
     exists (bool): флаг, указывающий, существует ли пользователь с указанным id
     """
-    user = await UsersDAO.find_one_or_none(id=id)
+    user = await UsersDAO.find_one_or_none(id=user_id)
     if exists:
         assert user
         assert user.email == email
-        assert user.id == id
+        assert user.id == user_id
     else:
         assert not user
 
@@ -68,9 +68,9 @@ async def test_add():
     user = await UsersDAO.find_one_or_none(id=user_id)
     assert user is not None and all(
         [
-            user.is_verified == False,
-            user.is_active == True,
-            user.is_superuser == True,
+            user.is_verified is False,
+            user.is_active is True,
+            user.is_superuser is True,
             user.registration_date is not None,
             user.last_login_date is not None,
             user.email == new_user_data["email"],
@@ -79,14 +79,14 @@ async def test_add():
 
 
 async def test_delete():
-   """
-   Тестирование метода delete класса UsersDAO.
+    """
+    Тестирование метода delete класса UsersDAO.
 
-   Проверяет, что метод удаляет пользователя с указанным email.
+    Проверяет, что метод удаляет пользователя с указанным email.
 
-   Проверяет, что количество пользователей после удаления на 1 меньше, чем количество пользователей до удаления.
-   """
-   user_count = len(await UsersDAO.find_all())
-   await UsersDAO.delete(email="test@example.com")
-   new_user_count = len(await UsersDAO.find_all())
-   assert new_user_count == user_count - 1
+    Проверяет, что количество пользователей после удаления на 1 меньше, чем количество пользователей до удаления.
+    """
+    user_count = len(await UsersDAO.find_all())
+    await UsersDAO.delete(email="test@example.com")
+    new_user_count = len(await UsersDAO.find_all())
+    assert new_user_count == user_count - 1

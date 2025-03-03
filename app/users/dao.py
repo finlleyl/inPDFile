@@ -1,9 +1,8 @@
-from app.dao.base import BaseDAO
-from app.users.models import Users
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.users.models import UserConfirmations
-from app.database import async_session_maker
 from typing import AsyncGenerator
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.dao.base import BaseDAO
+from app.database import async_session_maker
+from app.users.models import Users, UserConfirmations
 
 
 class UsersDAO(BaseDAO):

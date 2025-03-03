@@ -1,6 +1,6 @@
+import shutil
 from fastapi import UploadFile
 from fastapi import APIRouter
-import shutil
 
 from app.tasks.tasks import proccess_picture
 

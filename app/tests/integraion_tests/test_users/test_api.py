@@ -45,8 +45,8 @@ async def test_register_user(email, password, status_code, ac: AsyncClient):
     user = await UsersDAO.find_one_or_none(email=email)
     if user:
         assert response.status_code == status_code
-        Userconfirmation = await UserConfirmationDAO().find_all(user_id=user.id)
-        assert Userconfirmation is not None
+        user_confirmation = await UserConfirmationDAO().find_all(user_id=user.id)
+        assert user_confirmation is not None
 
 
 @pytest.mark.parametrize(

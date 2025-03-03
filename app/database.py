@@ -5,10 +5,10 @@ from app.config import settings
 from app.logger import logger
 
 if settings.MODE == "TEST":
-    DATABASE_URL = settings.TEST_DATABASE_URL
+    DATABASE_URL = settings.test_database_url
     DATABASE_PARAMS = {"poolclass": NullPool}
 else:
-    DATABASE_URL = settings.DATABASE_URL
+    DATABASE_URL = settings.database_url
     DATABASE_PARAMS = {}
 
 

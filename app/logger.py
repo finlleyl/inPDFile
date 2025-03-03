@@ -1,16 +1,16 @@
-import logging
-from pythonjsonlogger.json import JsonFormatter
 import os
 from datetime import datetime
+import logging
+from pythonjsonlogger.json import JsonFormatter
 from app.config import settings
 
-log_dir = "logs"
-if not os.path.exists(log_dir):
-    os.makedirs(log_dir)
+LOG_DIR = "logs"
+if not os.path.exists(LOG_DIR):
+    os.makedirs(LOG_DIR)
 
 timestamp = datetime.now().strftime("%Y_%m_%d_%H_%M")
-log_file = os.path.join(log_dir, f"app_{timestamp}.log")
-error_log_file = os.path.join(log_dir, f"error_{timestamp}.log")
+log_file = os.path.join(LOG_DIR, f"app_{timestamp}.log")
+error_log_file = os.path.join(LOG_DIR, f"error_{timestamp}.log")
 
 logger = logging.getLogger()
 logger.setLevel(settings.LOG_LEVEL)

@@ -2,13 +2,14 @@ import time
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from motor.motor_asyncio import AsyncIOMotorClient
+from prometheus_fastapi_instrumentator import Instrumentator
+from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
 
 from app.users.router import router as router_users
 from app.pdf.router import router as router_pdf
 from app.logger import logger
 from app.config import settings
-from motor.motor_asyncio import AsyncIOMotorClient
-from prometheus_fastapi_instrumentator import Instrumentator
 
 
 @asynccontextmanager
@@ -19,13 +20,14 @@ async def lifespan(app: FastAPI):
     # setup_scheduler()
     try:
         app.mongodb_client = AsyncIOMotorClient(
-            settings.MONGODB_URL,
+            settings.mongodb_url,
             maxPoolSize=100,
             minPoolSize=10,
         )
         app.mongodb = app.mongodb_client[settings.MONGO_INITDB_DB_NAME]
-    except Exception as e:
-        logger.error(f"Error during connection to MongoDB: {str(e)}", exc_info=True)
+    except (ConnectionFailure, ServerSelectionTimeoutError) as e:
+        logger.error(f"MongoDB connection error: {str(e)}", exc_info=True)
+        raise
 
     yield
 

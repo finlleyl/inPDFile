@@ -31,19 +31,19 @@ class Settings(BaseSettings):
     MONGO_INITDB_ROOT_PASSWORD: str
 
     @property
-    def DATABASE_URL(self):
+    def database_url(self):
         return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
 
     @property
-    def TEST_DATABASE_URL(self):
+    def test_database_url(self):
         return f"postgresql+asyncpg://{self.TEST_DB_USER}:{self.TEST_DB_PASS}@{self.TEST_DB_HOST}:{self.TEST_DB_PORT}/{self.TEST_DB_NAME}"
 
     @property
-    def MONGODB_URL(self):
+    def mongodb_url(self):
         return f"mongodb://{self.MONGO_INITDB_ROOT_USERNAME}:{self.MONGO_INITDB_ROOT_PASSWORD}@{self.MONGO_INITDB_DB_HOST}:{self.MONGO_INITDB_DB_PORT}/?authSource={self.MONGO_INITDB_ROOT_USERNAME}"
 
     @property
-    def TEST_MONGODB_URL(self):
+    def test_mongodb_url(self):
         return f"mongodb://{self.MONGO_INITDB_ROOT_USERNAME}:{self.MONGO_INITDB_ROOT_PASSWORD}@{self.TEST_MONGO_INITDB_DB_HOST}:{self.MONGO_INITDB_DB_PORT}/?authSource={self.MONGO_INITDB_ROOT_USERNAME}"
 
     SECRET_KEY: str

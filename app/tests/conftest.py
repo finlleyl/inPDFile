@@ -4,11 +4,11 @@ import httpx
 from motor.motor_asyncio import AsyncIOMotorClient
 import pytest
 from sqlalchemy import insert
+from httpx import AsyncClient
 from app.database import Base, async_session_maker, engine
 from app.config import settings
 from app.main import app as fast_apiapp
 from app.users.models import Users
-from httpx import AsyncClient
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -58,7 +58,7 @@ async def session():
 @pytest.fixture(scope="function")
 async def mongodb():
     client = AsyncIOMotorClient(
-        settings.TEST_MONGODB_URL,
+        settings.test_mongodb_url,
         maxPoolSize=100,
         minPoolSize=10,
     )

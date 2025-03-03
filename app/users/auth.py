@@ -30,23 +30,23 @@ async def authenticate_user(email: EmailStr, password: str):
     try:
         user = await UsersDAO.find_one_or_none(email=email)
         if not user or not verify_password(password, user.hashed_password):
-            logger.warning(f"Failed authentication attempt", extra={"email": email})
+            logger.warning("Failed authentication attempt", extra={"email": email})
             return None
-        logger.info(f"User authenticated successfully", extra={"user_id": user.id})
+        logger.info("User authenticated successfully", extra={"user_id": user.id})
         return user
     except Exception as e:
         logger.error(
-            f"Error during authentication", extra={"email": email, "error": str(e)}
+            "Error during authentication", extra={"email": email, "error": str(e)}
         )
         raise
 
 
-async def send_confirmation_email(email, code):
+async def send_confirmation_email(email, _code):
     try:
-        logger.info(f"Confirmation email sent", extra={"email": email})
+        logger.info("Confirmation email sent", extra={"email": email})
     except Exception as e:
         logger.error(
-            f"Error sending confirmation email", extra={"email": email, "error": str(e)}
+            "Error sending confirmation email", extra={"email": email, "error": str(e)}
         )
         raise
 
@@ -54,8 +54,8 @@ async def send_confirmation_email(email, code):
 async def generate_confirmation_code() -> str:
     try:
         code = str(random.randint(1, 9999)).zfill(4)
-        logger.debug(f"Generated confirmation code", extra={"code": code})
+        logger.debug("Generated confirmation code", extra={"code": code})
         return code
     except Exception as e:
-        logger.error(f"Error generating confirmation code", extra={"error": str(e)})
+        logger.error("Error generating confirmation code", extra={"error": str(e)})
         raise

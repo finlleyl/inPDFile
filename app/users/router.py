@@ -16,7 +16,7 @@ from app.exceptions import (
     IncorrectEmailOrPasswordException,
     ConfirmationExpiredException,
     ConfirmationDoesNotExistException,
-    ConfirmationAlreadyUsed
+    ConfirmationAlreadyUsed,
 )
 from app.users.auth import generate_confirmation_code
 from app.logger import logger
@@ -32,7 +32,9 @@ async def register_user(user_data: SUserAuth):
     try:
         existing_user = await UsersDAO.find_one_or_none(email=user_data.email)
         if existing_user:
-            logger.warning(f"Registration attempt with existing email: {user_data.email}")
+            logger.warning(
+                f"Registration attempt with existing email: {user_data.email}"
+            )
             raise UserAlreadyExistsException
 
         async with SessionManager() as session:
@@ -48,14 +50,18 @@ async def register_user(user_data: SUserAuth):
             await UserConfirmationDAO().add_confirmation(confirmation, session)
             await send_confirmation_email(user_data.email, confirmation_code)
             await session.commit()
-            
-            logger.info(f"New user registered successfully", extra={"email": user_data.email})
+            logger.info(
+                "New user registered successfully", extra={"email": user_data.email}
+            )
             return {
                 "message": "User registered successfully. Please check your email for confirmation.",
                 "user_id": user_id,
             }
     except Exception as e:
-        logger.error(f"Error during user registration", extra={"email": user_data.email, "error": str(e)})
+        logger.error(
+            "Error during user registration",
+            extra={"email": user_data.email, "error": str(e)},
+        )
         raise
 
 
@@ -64,20 +70,24 @@ async def confirm_user(code: str):
     try:
         confirmation = await UsersDAO.find_confirmation(code=code)
         if not confirmation:
-            logger.warning(f"Confirmation attempt with non-existent code: {code}")
+            logger.warning("Confirmation attempt with non-existent code: {code}")
             raise ConfirmationDoesNotExistException
         if confirmation.is_used:
-            logger.warning(f"Confirmation attempt with used code: {code}")
+            logger.warning("Confirmation attempt with used code: {code}")
             raise ConfirmationAlreadyUsed
         if confirmation.expires_at < datetime.utcnow():
-            logger.warning(f"Confirmation attempt with expired code: {code}")
+            logger.warning("Confirmation attempt with expired code: {code}")
             raise ConfirmationExpiredException
-        
+
         await UsersDAO.confirm_user(confirmation.user_id)
-        logger.info(f"User confirmed successfully", extra={"user_id": confirmation.user_id})
+        logger.info(
+            "User confirmed successfully", extra={"user_id": confirmation.user_id}
+        )
         return True
     except Exception as e:
-        logger.error(f"Error during user confirmation", extra={"code": code, "error": str(e)})
+        logger.error(
+            "Error during user confirmation", extra={"code": code, "error": str(e)}
+        )
         raise
 
 
@@ -86,15 +96,17 @@ async def login(response: Response, user_data: SUserAuth):
     try:
         user = await authenticate_user(user_data.email, user_data.password)
         if not user:
-            logger.warning(f"Failed login attempt", extra={"email": user_data.email})
+            logger.warning("Failed login attempt", extra={"email": user_data.email})
             raise IncorrectEmailOrPasswordException
-            
+
         acces_token = create_acces_token({"sub": str(user.id)})
         response.set_cookie("pdf_access_token", acces_token, httponly=True)
-        logger.info(f"User logged in successfully", extra={"user_id": user.id})
+        logger.info("User logged in successfully", extra={"user_id": user.id})
         return {"access_token": acces_token}
     except Exception as e:
-        logger.error(f"Error during login", extra={"email": user_data.email, "error": str(e)})
+        logger.error(
+            "Error during login", extra={"email": user_data.email, "error": str(e)}
+        )
         raise
 
 
@@ -110,7 +122,7 @@ async def read_me(current_user: Users = Depends(get_current_user)):
 
 
 @router.get("/all_users")
-async def read_all_users(current_user: Users = Depends(get_current_user)):
+async def read_all_users(_current_user: Users = Depends(get_current_user)):
     return await UsersDAO.find_all()
 
 

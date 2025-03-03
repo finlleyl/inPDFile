@@ -1,15 +1,15 @@
+import urllib
 from datetime import datetime
 from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 from fastapi.responses import StreamingResponse
+from sqlalchemy.exc import SQLAlchemyError
 from app.users.dependencies import get_current_user
 from app.users.models import Users
-import urllib
 from app.pdf.models import PdfDocuments, PdfProcessingHistory
-from sqlalchemy.exc import SQLAlchemyError
 from app.database import SessionManager
-from app.pdf.models import PdfDocuments, PdfProcessingHistory
 from app.pdf.dao import PdfDocumentsDAO
 from app.dao.mongodb_dao import MongoDBStorageDAO
+from app.logger import logger
 
 
 router = APIRouter(
@@ -67,13 +67,20 @@ async def upload_pdf(
         except SQLAlchemyError as e:
             await session.rollback()
             return {"error": "Ошибка при сохранении данных в БД", "details": str(e)}
+        except (IOError, ValueError) as e:
+            raise HTTPException(
+                status_code=400, detail=f"Ошибка загрузки файла: {str(e)}"
+            ) from e
         except Exception as e:
-            return {"error": "Ошибка загрузки файла", "details": str(e)}
+            logger.exception("Непредвиденная ошибка при загрузке файла")
+            raise HTTPException(
+                status_code=500, detail=f"Ошибка загрузки файла: {str(e)}"
+            ) from e
 
 
 @router.get("/download/{file_id}")
 async def download_pdf(
-    file_id: str, request: Request, user: Users = Depends(get_current_user)
+    file_id: str, request: Request, _user: Users = Depends(get_current_user)
 ):
     mongo_dao = MongoDBStorageDAO(request.app.mongodb)
     grid_out = await mongo_dao.download_file(file_id)
@@ -97,7 +104,7 @@ async def download_pdf(
 
 
 @router.get("/all_files/")
-async def list_all_files(request: Request, user: Users = Depends(get_current_user)):
+async def list_all_files(request: Request, _user: Users = Depends(get_current_user)):
     mongo_dao = MongoDBStorageDAO(request.app.mongodb)
     return await mongo_dao.list_all_files()
 
@@ -109,42 +116,41 @@ async def list_files(request: Request, user: Users = Depends(get_current_user)):
 
 
 @router.get("/history/")
-async def get_users_history(request: Request, user: Users = Depends(get_current_user)):
-    async with SessionManager() as session:
-        try:
-            results = await PdfDocumentsDAO.find_all(user_id=int(user.id))
-            final_history = []
+async def get_users_history(_request: Request, user: Users = Depends(get_current_user)):
+    try:
+        results = await PdfDocumentsDAO.find_all(user_id=int(user.id))
+        final_history = []
 
-            for result in results:
-                new_item = {}
+        for result in results:
+            new_item = {}
 
-                new_item["file_name"] = result["file_name"]
-                cur_size = int(result["file_size"]) / (1024 * 1024)
-                new_item["file_size"] = f"{cur_size:.2f} MB"
-                new_item["file_path"] = result["file_path"]
-                new_item["status"] = result["status"]
-                new_item["classification"] = result["classification"]
-                new_item["document_type"] = result["document_type"]
+            new_item["file_name"] = result["file_name"]
+            cur_size = int(result["file_size"]) / (1024 * 1024)
+            new_item["file_size"] = f"{cur_size:.2f} MB"
+            new_item["file_path"] = result["file_path"]
+            new_item["status"] = result["status"]
+            new_item["classification"] = result["classification"]
+            new_item["document_type"] = result["document_type"]
 
-                if isinstance(result["upload_date"], datetime):  # Проверяем тип данных
-                    formatted_date = result["upload_date"].strftime("%d.%m.%Y %H:%M:%S")
-                else:
-                    date_str = str(result["upload_date"])
-                    date_obj = datetime.fromisoformat(date_str)
-                    formatted_date = date_obj.strftime("%d.%m.%Y %H:%M:%S")
+            if isinstance(result["upload_date"], datetime):  # Проверяем тип данных
+                formatted_date = result["upload_date"].strftime("%d.%m.%Y %H:%M:%S")
+            else:
+                date_str = str(result["upload_date"])
+                date_obj = datetime.fromisoformat(date_str)
+                formatted_date = date_obj.strftime("%d.%m.%Y %H:%M:%S")
 
-                new_item["upload_date"] = formatted_date
+            new_item["upload_date"] = formatted_date
 
-                new_item["has_signature"] = (
-                    "Имеет подпись" if result["has_signature"] else "Не имеет подпись"
-                )
-                new_item["has_stamp"] = (
-                    "Имеет печать" if result["has_stamp"] else "Не имеет печать"
-                )
+            new_item["has_signature"] = (
+                "Имеет подпись" if result["has_signature"] else "Не имеет подпись"
+            )
+            new_item["has_stamp"] = (
+                "Имеет печать" if result["has_stamp"] else "Не имеет печать"
+            )
 
-                final_history.append(new_item)
+            final_history.append(new_item)
 
-            return final_history
+        return final_history
 
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e

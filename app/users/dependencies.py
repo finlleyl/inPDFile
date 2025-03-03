@@ -22,8 +22,8 @@ async def get_current_user(token: str = Depends(get_token)):
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, settings.ALGORITHM)
 
-    except JWTError:
-        raise TokenNotFoundException
+    except JWTError as e:
+        raise TokenNotFoundException from e
     expire: str = payload.get("exp")
     if (not expire) or (datetime.now(timezone.utc).timestamp() > float(expire)):
         raise TokenIncorrectFormatException
