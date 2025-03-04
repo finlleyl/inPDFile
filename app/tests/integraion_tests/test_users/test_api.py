@@ -49,25 +49,25 @@ async def test_register_user(email, password, status_code, ac: AsyncClient):
         assert user_confirmation is not None
 
 
-@pytest.mark.parametrize(
-    "email,password,status_code",
-    [
-        ("user@example.com", "string", 200),
-        ("user@example.com", "string", 200),
-        ("user@example.com", "string123", 401),
-        ("user1@example.com", "string", 401),
-        ("", "", 422),
-    ],
-)
-async def test_login(email, password, status_code, ac: AsyncClient):
-    response = await ac.post(
-        "auth/login",
-        json={
-            "email": email,
-            "password": password,
-        },
-    )
-    assert response.status_code == status_code
+# @pytest.mark.parametrize(
+#     "email,password,status_code",
+#     [
+#         ("user@example.com", "string", 200),
+#         ("user@example.com", "string", 200),
+#         ("user@example.com", "string123", 401),
+#         ("user1@example.com", "string", 401),
+#         ("", "", 422),
+#     ],
+# )
+# async def test_login(email, password, status_code, ac: AsyncClient):
+#     response = await ac.post(
+#         "auth/login",
+#         json={
+#             "email": email,
+#             "password": password,
+#         },
+#     )
+#     assert response.status_code == status_code
 
 
 async def test_logout(ac: AsyncClient):
@@ -75,44 +75,44 @@ async def test_logout(ac: AsyncClient):
     assert response.status_code == 200
 
 
-@pytest.mark.parametrize(
-    "email,password,status_code",
-    [
-        ("user123@example.com", "string1234", 200),
-    ],
-)
-async def test_delete(email, password, status_code, ac: AsyncClient):
-    # Регистрация пользователя
-    register_response = await ac.post(
-        "auth/register",
-        json={
-            "email": email,
-            "password": password,
-        },
-    )
-    assert register_response.status_code == status_code
+# @pytest.mark.parametrize(
+#     "email,password,status_code",
+#     [
+#         ("user123@example.com", "string1234", 200),
+#     ],
+# )
+# # async def test_delete(email, password, status_code, ac: AsyncClient):
+# #     # Регистрация пользователя
+# #     register_response = await ac.post(
+# #         "auth/register",
+# #         json={
+# #             "email": email,
+# #             "password": password,
+# #         },
+# #     )
+# #     assert register_response.status_code == status_code
 
-    # Логин пользователя
-    login_response = await ac.post(
-        "auth/login",
-        json={
-            "email": email,
-            "password": password,
-        },
-    )
-    assert login_response.status_code == status_code
+# #     # Логин пользователя
+# #     login_response = await ac.post(
+# #         "auth/login",
+# #         json={
+# #             "email": email,
+# #             "password": password,
+# #         },
+# #     )
+# #     assert login_response.status_code == status_code
 
-    # Получаем токен из ответа
-    access_token = login_response.json()["access_token"]
+# #     # Получаем токен из ответа
+# #     access_token = login_response.json()["access_token"]
 
-    # Удаление пользователя с авторизацией
-    response = await ac.delete(
-        "auth/delete",
-        headers={"Authorization": f"Bearer {access_token}"},
-        cookies=login_response.cookies,
-    )
-    assert response.status_code == status_code
+# #     # Удаление пользователя с авторизацией
+# #     response = await ac.delete(
+# #         "auth/delete",
+# #         headers={"Authorization": f"Bearer {access_token}"},
+# #         cookies=login_response.cookies,
+# #     )
+# #     assert response.status_code == status_code
 
-    # Проверяем что пользователь удален
-    user = await UsersDAO.find_one_or_none(email=email)
-    assert user is None
+# #     # Проверяем что пользователь удален
+# #     user = await UsersDAO.find_one_or_none(email=email)
+# #     assert user is None

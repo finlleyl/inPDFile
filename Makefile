@@ -36,4 +36,7 @@ pytest-cov:
 b:
 	docker-compose up --build
 
+u:
+	uvicorn app.main:app
+
 .PHONY: all-linters mypy flake8 pylint toml-sort autoflake app pytest pytest-cov

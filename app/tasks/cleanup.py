@@ -29,6 +29,6 @@ async def cleanup_unverified_users():
 
 def setup_scheduler():
     scheduler.add_job(
-        cleanup_unverified_users, "interval", minutes=10, id="cleanup_unverified_users"
+        cleanup_unverified_users, "interval", minutes=15, id="cleanup_unverified_users"
     )
     scheduler.start()

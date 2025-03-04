@@ -19,6 +19,16 @@ class IncorrectEmailOrPasswordException(PdfException):
     detail = "Неправильная почта или пароль"
 
 
+class NoVerificationException(PdfException):
+    status_code = status.HTTP_401_UNAUTHORIZED
+    detail = "Аккаунт не активирован."
+
+
+class BanUserException(PdfException):
+    status_code = status.HTTP_401_UNAUTHORIZED
+    detail = "Пользователь заблокирован"
+
+
 class TokenNotFoundException(PdfException):
     status_code = status.HTTP_401_UNAUTHORIZED
     detail = "Токен не найден"
@@ -56,3 +66,18 @@ class FileNotPDFException(PdfException):
 class ConfirmationEmailNotSentException(PdfException):
     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
     detail = "Ошибка при отправке письма подтверждения"
+
+
+class FiledUpdateVerificationException(PdfException):
+    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    detail = "Ошибка при обновлении поля верификации"
+
+
+class IncorrectConfirmationCodeException(PdfException):
+    status_code = status.HTTP_401_UNAUTHORIZED
+    detail = "Неверный код подтверждения"
+
+
+class AdminUserDoesNotExistException(PdfException):
+    status_code = status.HTTP_401_UNAUTHORIZED
+    detail = "Вы не администратор"

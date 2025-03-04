@@ -5,11 +5,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from prometheus_fastapi_instrumentator import Instrumentator
 from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
-
+from app.tasks.cleanup import scheduler
 from app.users.router import router as router_users
 from app.pdf.router import router as router_pdf
 from app.logger import logger
 from app.config import settings
+from app.tasks.cleanup import setup_scheduler
 
 
 @asynccontextmanager
@@ -17,7 +18,7 @@ async def lifespan(app: FastAPI):
 
     startup_time = time.strftime("%Y-%m-%d %H:%M:%S")
     logger.info("Application startup", extra={"startup_time": startup_time})
-    # setup_scheduler()
+    setup_scheduler()
     try:
         app.mongodb_client = AsyncIOMotorClient(
             settings.mongodb_url,
@@ -32,7 +33,7 @@ async def lifespan(app: FastAPI):
     yield
 
     app.mongodb_client.close()
-    # scheduler.shutdown()
+    scheduler.shutdown()
     shutdown_time = time.strftime("%Y-%m-%d %H:%M:%S")
     logger.info("Application shutdown", extra={"shutdown_time": shutdown_time})
 

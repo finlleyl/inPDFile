@@ -5,20 +5,19 @@ from app.config import settings
 from app.users.dao import UsersDAO
 from app.users.models import Users
 from app.exceptions import (
+    AdminUserDoesNotExistException,
+    BanUserException,
+    NoVerificationException,
     TokenNotFoundException,
     TokenIncorrectFormatException,
     UserIsNotPresentException,
 )
 
 
-def get_token(request: Request) -> dict:
+async def get_token(request: Request):
     token = request.cookies.get("pdf_access_token")
     if not token:
         raise TokenNotFoundException
-    return token
-
-
-async def get_current_user(token: str = Depends(get_token)):
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, settings.ALGORITHM)
 
@@ -33,10 +32,20 @@ async def get_current_user(token: str = Depends(get_token)):
     user = await UsersDAO.find_one_or_none(id=int(user_id))
     if not user:
         raise UserIsNotPresentException
+
     return user
 
 
+async def get_current_user(current_user: Users = Depends(get_token)):
+    if not current_user.is_verified:
+        raise NoVerificationException
+    if not current_user.is_active:
+        raise BanUserException
+    return current_user
+
+
 async def get_current_admin_user(current_user: Users = Depends(get_current_user)):
-    # if current_user.role != "admin":
-    #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+    if not current_user.is_superuser:
+        raise AdminUserDoesNotExistException
+
     return current_user
