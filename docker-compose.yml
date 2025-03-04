@@ -56,9 +56,24 @@ services:
     container_name: pdf_celery
     build: 
       context: .
-    command: sh -c "celery --app=app.tasks.celery:celery worker -l INFO && celery --app=app.tasks.celery:celery flower"
+    command: sh -c "celery --app=app.tasks.celery:celery worker -l INFO"
     env_file:
       - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  flower:
+    container_name: pdf_flower
+    build: 
+      context: .
+    command: sh -c "celery -A app.tasks.celery:celery flower"
+    env_file:
+      - .env
+    ports:
+      - 5555:5555
     depends_on:
       postgres:
         condition: service_healthy

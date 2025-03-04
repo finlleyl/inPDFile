@@ -10,15 +10,15 @@ from app.logger import logger
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-def get_password_hash(password) -> str:
+async def get_password_hash(password) -> str:
     return pwd_context.hash(password)
 
 
-def verify_password(plain_password, hashed_passowrd) -> bool:
+async def verify_password(plain_password, hashed_passowrd) -> bool:
     return pwd_context.verify(plain_password, hashed_passowrd)
 
 
-def create_acces_token(data: dict) -> str:
+async def create_acces_token(data: dict) -> str:
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + timedelta(minutes=60)
     to_encode.update({"exp": expire})
