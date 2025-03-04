@@ -1,11 +1,12 @@
 from email.message import EmailMessage
 from pydantic import EmailStr
+from app.config import settings
 
 
 def create_registration_confirmation_template(email_to: EmailStr, code: str):
     msg = EmailMessage()
     msg["Subject"] = "Подтверждение регистрации inPDF"
-    msg["From"] = "nagletz-super@mail.ru"
+    msg["From"] = settings.SMTP_USER
     msg["To"] = email_to
     msg.set_content(
         f"""

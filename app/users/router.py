@@ -1,6 +1,7 @@
 from datetime import datetime
 from fastapi import APIRouter, Depends, Response
 from app.database import SessionManager
+from app.tasks.tasks import send_registration_confirmation
 from app.users.auth import authenticate_user, get_password_hash, create_acces_token
 from app.users.dao import UserConfirmationDAO, UsersDAO
 from app.users.dependencies import get_current_user, get_token
@@ -8,6 +9,7 @@ from app.users.models import UserConfirmations, Users
 from app.users.schemas import SUserAuth
 from app.exceptions import (
     BanUserException,
+    ConfirmationEmailNotSentException,
     ConfirmationExpiredException,
     FiledUpdateVerificationException,
     IncorrectConfirmationCodeException,
@@ -47,14 +49,14 @@ async def register_user(user_data: SUserAuth, response: Response):
                 user_id=user_id, confirmation_code=confirmation_code
             )
             await UserConfirmationDAO().add_confirmation(confirmation, session)
-            # try:
-            #     send_registration_confirmation.delay(user_data.email, confirmation_code)
-            # except Exception as e:
-            #     logger.error(
-            #         "Error during sending confirmation email",
-            #         extra={"email": user_data.email, "error": str(e)},
-            #     )
-            #     raise ConfirmationEmailNotSentException from e
+            try:
+                send_registration_confirmation(user_data.email, confirmation_code)
+            except Exception as e:
+                logger.error(
+                    "Error during sending confirmation email",
+                    extra={"email": user_data.email, "error": str(e)},
+                )
+                raise ConfirmationEmailNotSentException from e
 
             await session.commit()
             logger.info(
@@ -161,9 +163,7 @@ async def read_all_users(_current_user: Users = Depends(get_current_user)):
 
 
 @router.delete("/delete")
-async def delete_me(
-    response: Response, current_user: Users = Depends(get_current_user)
-):
+async def delete_me(response: Response, current_user: Users = Depends(get_token)):
     await UsersDAO.delete(id=current_user.id)
     response.delete_cookie("pdf_access_token")
     return {

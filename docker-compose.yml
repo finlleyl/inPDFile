@@ -69,7 +69,7 @@ services:
     container_name: pdf_flower
     build: 
       context: .
-    command: sh -c "celery -A app.tasks.celery:celery flower"
+    command: sh -c "celery --app=app.tasks.celery:celery flower"
     env_file:
       - .env
     ports:
