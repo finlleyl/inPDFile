@@ -1,0 +1,12 @@
+[
+    {
+        "email": "user@example.com",
+        "is_superuser": true,
+        "hashed_password": "$2b$12$T/NY9HntETC32fnKzVDrNOBNCciEbTuiJf5itvPOr.sD3t0UpNDAm"
+    },
+    {
+        "email": "user1@example.com",
+        "hashed_password": "$2b$12$JEOqpuJADJkAb2UTFjq1wetSCU13y.DWMyy1l43OA0VEm0PAdEeZ."
+    }
+    
+]

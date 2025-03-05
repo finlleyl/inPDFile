@@ -1,0 +1,27 @@
+global:
+  scrape_interval: 15s
+
+  external_labels:
+    monitor: 'codelab-monitor'
+
+scrape_configs:
+  - job_name: 'prometheus'
+
+    scrape_interval: 5s
+
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'pdf'
+  
+    scrape_interval: 5s
+
+    static_configs:
+      - targets: ['pdf:8000']
+
+  - job_name: 'node_expoter'
+  
+    scrape_interval: 5s
+
+    static_configs:
+      - targets: ['node_expoter:9100']

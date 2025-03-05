@@ -1,0 +1,127 @@
+services:
+  postgres:
+    image: postgres:17.4
+    container_name: postgres_db
+    env_file:
+      - .env
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5  
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  redis:
+    image: redis:7.4
+    container_name: pdf_redis
+    ports:
+      - 6379:6379
+
+  mongodb:
+    image: mongo:6-jammy
+    container_name: mongo_db
+    env_file:
+      - .env
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    restart: unless-stopped
+  
+  pdf:
+    image: pdf_image
+    container_name: pdf_app
+    build: 
+      context: .
+    env_file:
+      - .env
+    command: sh -c "alembic upgrade head && gunicorn app.main:app --workers 1 --worker-class uvicorn.workers.UvicornWorker --bind=0.0.0.0:8000"
+    ports:
+      - 8000:8000
+    depends_on: 
+     postgres:
+      condition: service_healthy
+     redis:
+      condition: service_started
+     mongodb:
+      condition: service_started
+    volumes:
+      - ./logs:/app/logs  # смонтировать папку logs из проекта в /app/logs внутри контейнера
+
+  celery:
+    container_name: pdf_celery
+    build: 
+      context: .
+    command: sh -c "celery --app=app.tasks.celery:celery worker -l INFO"
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  flower:
+    container_name: pdf_flower
+    build: 
+      context: .
+    command: sh -c "celery --app=app.tasks.celery:celery flower"
+    env_file:
+      - .env
+    ports:
+      - 5555:5555
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+
+  prometheus:
+    image: prom/prometheus:v3.2.1
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheusdata:/prometheus
+    restart: unless-stopped
+    ports:
+      - 9090:9090
+
+  grafana:
+    image: grafana/grafana:11.5.2-ubuntu
+    container_name: grafana
+    volumes:
+      - grafanadata:/var/lib/grafana
+    restart: unless-stopped
+    ports:
+      - 3000:3000
+  
+  node_expoter:
+    image: prom/node-exporter:v1.9.0
+    ports:
+      - 9100:9100
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude'
+      - '^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)'
+
+volumes:  
+  pgdata:
+    driver: local
+  mongo-data:
+    driver: local
+  prometheusdata:
+    driver: local
+  grafanadata:
+    driver: local
+  pdf:
+    driver: local
