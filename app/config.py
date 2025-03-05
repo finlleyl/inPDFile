@@ -59,6 +59,7 @@ class Settings(BaseSettings):
     SMTP_PORT: int
     SMTP_USER: str
     SMTP_PASS: str
+    EMAIL_FROM: str
 
     model_config = ConfigDict(env_file=".env")
 

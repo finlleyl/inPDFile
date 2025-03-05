@@ -6,7 +6,7 @@ from app.config import settings
 def create_registration_confirmation_template(email_to: EmailStr, code: str):
     msg = EmailMessage()
     msg["Subject"] = "Подтверждение регистрации inPDF"
-    msg["From"] = settings.SMTP_USER
+    msg["From"] = "support@inpdf.ru"
     msg["To"] = email_to
     msg.set_content(
         f"""

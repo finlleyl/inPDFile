@@ -50,7 +50,7 @@ async def register_user(user_data: SUserAuth, response: Response):
             )
             await UserConfirmationDAO().add_confirmation(confirmation, session)
             try:
-                send_registration_confirmation(user_data.email, confirmation_code)
+                send_registration_confirmation.delay(user_data.email, confirmation_code)
             except Exception as e:
                 logger.error(
                     "Error during sending confirmation email",
