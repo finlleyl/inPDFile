@@ -3,6 +3,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 from fastapi.responses import StreamingResponse
 from sqlalchemy.exc import SQLAlchemyError
+from app.pdf.schemas import SHistoryOut, SUploadOut
 from app.users.dependencies import get_current_user
 from app.users.models import Users
 from app.pdf.models import PdfDocuments, PdfProcessingHistory
@@ -18,7 +19,7 @@ router = APIRouter(
 )
 
 
-@router.post("/upload")
+@router.post("/upload", response_model=SUploadOut)
 async def upload_pdf(
     request: Request,
     file: UploadFile = File(...),
@@ -62,11 +63,15 @@ async def upload_pdf(
             )
             session.add(history_entry)
 
-            return {"file_id": file_id, "document_id": pdf_document.id}
+            return {"file_id": file_id, "document_id": pdf_document.id, "status": "ok"}
 
         except SQLAlchemyError as e:
             await session.rollback()
-            return {"error": "Ошибка при сохранении данных в БД", "details": str(e)}
+            return {
+                "file_id": "0",
+                "document_id": 0,
+                "status": str(e),
+            }
         except (IOError, ValueError) as e:
             raise HTTPException(
                 status_code=400, detail=f"Ошибка загрузки файла: {str(e)}"
@@ -115,7 +120,7 @@ async def list_files(request: Request, user: Users = Depends(get_current_user)):
     return await mongo_dao.list_user_files(user.id)
 
 
-@router.get("/history/")
+@router.get("/history/", response_model=list[SHistoryOut])
 async def get_users_history(_request: Request, user: Users = Depends(get_current_user)):
     try:
         results = await PdfDocumentsDAO.find_all(user_id=int(user.id))
