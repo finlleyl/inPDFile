@@ -6,7 +6,13 @@
     },
     {
         "email": "user1@example.com",
-        "hashed_password": "$2b$12$JEOqpuJADJkAb2UTFjq1wetSCU13y.DWMyy1l43OA0VEm0PAdEeZ."
+        "hashed_password": "$2b$12$JEOqpuJADJkAb2UTFjq1wetSCU13y.DWMyy1l43OA0VEm0PAdEeZ.",
+        "is_verified": true
+    },
+    {
+        "email": "testt@example.com",
+        "hashed_password": "$2b$12$MhpfkMtvv.njhT6BI8LxU.bA3.gEQ3FNujc/0wvye6ZAajJFjfv7u",
+        "is_verified": true
     }
     
 ]

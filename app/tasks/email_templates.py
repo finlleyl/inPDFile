@@ -1,6 +1,5 @@
 from email.message import EmailMessage
 from pydantic import EmailStr
-from app.config import settings
 
 
 def create_registration_confirmation_template(email_to: EmailStr, code: str):

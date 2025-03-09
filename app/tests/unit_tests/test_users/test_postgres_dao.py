@@ -31,21 +31,21 @@ async def test_find_one_or_none(user_id, email, exists):
         assert not user
 
 
-# async def test_find_all():
-#     """
-#     Тестирование метода find_all класса UsersDAO.
+async def test_find_all():
+    """
+    Тестирование метода find_all класса UsersDAO.
 
-#     Проверяет, что метод возвращает всех активных пользователей, всех суперпользователей и всех пользователей.
+    Проверяет, что метод возвращает всех активных пользователей, всех суперпользователей и всех пользователей.
 
-#     Проверяет, что количество активных пользователей равно 3, количество суперпользователей равно 1, а общее количество пользователей равно 3.
-#     """
-#     active_users = await UsersDAO.find_all(is_active=True)
-#     super_users = await UsersDAO.find_all(is_superuser=True)
-#     all_users = await UsersDAO.find_all()
+    Проверяет, что количество активных пользователей равно 3, количество суперпользователей равно 1, а общее количество пользователей равно 3.
+    """
+    verified_users = await UsersDAO.find_all(is_verified=True)
+    super_users = await UsersDAO.find_all(is_superuser=True)
+    all_users = await UsersDAO.find_all()
 
-#     assert len(active_users) == 3
-#     assert len(super_users) == 1
-#     assert len(all_users) == 3
+    assert len(verified_users) == 2
+    assert len(super_users) == 1
+    assert len(all_users) == 4
 
 
 async def test_add():

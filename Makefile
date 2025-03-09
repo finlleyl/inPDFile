@@ -39,4 +39,13 @@ b:
 u:
 	uvicorn app.main:app
 
+migrate:
+	@echo "Введите описание миграции:"
+	@read -p "> " message; \
+	alembic revision --autogenerate -m "$$message"
+
+upgrade:
+	alembic upgrade head
+
+
 .PHONY: all-linters mypy flake8 pylint toml-sort autoflake app pytest pytest-cov

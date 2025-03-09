@@ -1,15 +1,19 @@
 from datetime import datetime
 from fastapi import APIRouter, Depends, Response
 from app.database import SessionManager
-from app.tasks.tasks import send_registration_confirmation
 from app.users.auth import authenticate_user, get_password_hash, create_acces_token
 from app.users.dao import UserConfirmationDAO, UsersDAO
 from app.users.dependencies import get_current_user, get_token
 from app.users.models import UserConfirmations, Users
-from app.users.schemas import SUserAuth
+from app.users.schemas import (
+    SUser,
+    SUserAuth,
+    SUserAuthOut,
+    SUserConfirmOut,
+    SUserDelete,
+)
 from app.exceptions import (
     BanUserException,
-    ConfirmationEmailNotSentException,
     ConfirmationExpiredException,
     FiledUpdateVerificationException,
     IncorrectConfirmationCodeException,
@@ -19,7 +23,6 @@ from app.exceptions import (
     ConfirmationDoesNotExistException,
     ConfirmationAlreadyUsed,
 )
-from app.users.auth import generate_confirmation_code
 from app.logger import logger
 
 router = APIRouter(
@@ -28,7 +31,7 @@ router = APIRouter(
 )
 
 
-@router.post("/register")
+@router.post("/register", response_model=SUserAuthOut)
 async def register_user(user_data: SUserAuth, response: Response):
     try:
         existing_user = await UsersDAO.find_one_or_none(email=user_data.email)
@@ -44,19 +47,20 @@ async def register_user(user_data: SUserAuth, response: Response):
                 session=session, email=user_data.email, hashed_password=hashed_password
             )
 
-            confirmation_code = await generate_confirmation_code()
+            # confirmation_code = await generate_confirmation_code()
+            confirmation_code = "0000"
             confirmation = UserConfirmations(
                 user_id=user_id, confirmation_code=confirmation_code
             )
             await UserConfirmationDAO().add_confirmation(confirmation, session)
-            try:
-                send_registration_confirmation.delay(user_data.email, confirmation_code)
-            except Exception as e:
-                logger.error(
-                    "Error during sending confirmation email",
-                    extra={"email": user_data.email, "error": str(e)},
-                )
-                raise ConfirmationEmailNotSentException from e
+            # try:
+            #     send_registration_confirmation.delay(user_data.email, confirmation_code)
+            # except Exception as e:
+            #     logger.error(
+            #         "Error during sending confirmation email",
+            #         extra={"email": user_data.email, "error": str(e)},
+            #     )
+            #     raise ConfirmationEmailNotSentException from e
 
             await session.commit()
             logger.info(
@@ -80,7 +84,7 @@ async def register_user(user_data: SUserAuth, response: Response):
         raise
 
 
-@router.put("/confirm")
+@router.put("/confirm", response_model=SUserConfirmOut)
 async def confirm_user(code: str, response: Response, user: Users = Depends(get_token)):
     try:
         user_confirmation: UserConfirmations = (
@@ -121,10 +125,10 @@ async def confirm_user(code: str, response: Response, user: Users = Depends(get_
         raise
 
 
-@router.post("/login")
+@router.post("/login", response_model=SUserAuthOut)
 async def login(response: Response, user_data: SUserAuth):
     try:
-        user = await authenticate_user(user_data.email, user_data.password)
+        user: Users = await authenticate_user(user_data.email, user_data.password)
         if not user:
             logger.warning("Failed login attempt", extra={"email": user_data.email})
             raise IncorrectEmailOrPasswordException
@@ -138,7 +142,11 @@ async def login(response: Response, user_data: SUserAuth):
         acces_token = create_acces_token({"sub": str(user.id)})
         response.set_cookie("pdf_access_token", acces_token, httponly=True)
         logger.info("User logged in successfully", extra={"user_id": user.id})
-        return {"access_token": acces_token}
+        return {
+            "message": "User logged in successfully.",
+            "access_token": acces_token,
+            "user_id": user.id,
+        }
     except Exception as e:
         logger.error(
             "Error during login", extra={"email": user_data.email, "error": str(e)}
@@ -152,21 +160,22 @@ async def logout(response: Response):
     return True
 
 
-@router.get("/me")
+@router.get("/me", response_model=SUser)
 async def read_me(current_user: Users = Depends(get_current_user)):
     return current_user
 
 
-@router.get("/all_users")
+@router.get("/all_users", response_model=list[SUser])
 async def read_all_users(_current_user: Users = Depends(get_current_user)):
-    return await UsersDAO.find_all()
+    users = await UsersDAO.find_all()
+    return users
 
 
-@router.delete("/delete")
+@router.delete("/delete", response_model=SUserDelete)
 async def delete_me(response: Response, current_user: Users = Depends(get_token)):
     await UsersDAO.delete(id=current_user.id)
     response.delete_cookie("pdf_access_token")
     return {
-        "user_id": current_user.id,
         "message": "User deleted successfully",
+        "user_id": current_user.id,
     }
