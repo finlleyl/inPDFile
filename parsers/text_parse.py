@@ -58,9 +58,9 @@ def process_pdf_folder(pdf_folder):
                 txt_path = pdf_path.replace(".pdf", ".txt")
                 with open(txt_path, "w", encoding="utf-8") as f:
                     f.write(text)
-                print(f"✅ Обработан: {filename}")
+                print(f"Обработан: {filename}")
             else:
-                print(f"⚠️ Не удалось извлечь текст из: {filename}")
+                print(f"Не удалось извлечь текст из: {filename}")
 
 
 if __name__ == "__main__":
