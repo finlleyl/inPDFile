@@ -14,7 +14,7 @@ def extract_text_from_pdf(pdf_path):
         full_text = extract_text(pdf_path).strip()
 
         if full_text:
-            return full_text  # Если текст найден, возвращаем его сразу
+            return full_text
 
         # Если pdfminer не дал результата, используем PyMuPDF
         doc = fitz.open(pdf_path)
@@ -24,7 +24,7 @@ def extract_text_from_pdf(pdf_path):
                 full_text += f"\n{text}"
 
         if full_text.strip():
-            return full_text  # Если нашли текст через PyMuPDF, возвращаем его
+            return full_text
 
         # Если текст не найден, пробуем OCR
         ocr_text = extract_text_with_ocr(pdf_path)
