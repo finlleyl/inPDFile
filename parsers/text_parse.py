@@ -1,45 +1,51 @@
+import os
+import io
 import fitz  # PyMuPDF
-import pdfplumber
 import pytesseract
 from pdf2image import convert_from_path
+from pdfminer.high_level import extract_text
 from PIL import Image
-import subprocess
-import io
-import os
+
 
 def extract_text_from_pdf(pdf_path):
-    """Извлекает текст из PDF, используя несколько методов"""
+    """Извлекает текст из PDF. Сначала пытаемся извлечь текст напрямую, если не удаётся — используем OCR."""
     try:
+        # Пробуем извлечь текст с помощью pdfminer
+        full_text = extract_text(pdf_path).strip()
+
+        if full_text:
+            return full_text  # Если текст найден, возвращаем его сразу
+
+        # Если pdfminer не дал результата, используем PyMuPDF
         doc = fitz.open(pdf_path)
-        full_text = ""
-
         for page in doc:
-            text = page.get_text("text")
-            if text.strip():
+            text = page.get_text("text").strip()
+            if text:
                 full_text += f"\n{text}"
-            else:
-                # Попробуем pdfplumber
-                with pdfplumber.open(pdf_path) as pdf:
-                    page_text = pdf.pages[page.number].extract_text()
-                    if page_text and page_text.strip():
-                        full_text += f"\n{page_text}"
-                    else:
-                        # Если текста нет, используем OCR
-                        pix = page.get_pixmap()
-                        img = Image.open(io.BytesIO(pix.tobytes("ppm")))
-                        text = pytesseract.image_to_string(img, lang="rus")
-                        full_text += f"\n{text}"
 
-        if not full_text.strip():
-            # Если всё еще нет текста, попробуем pdftotext
-            output = subprocess.run(["pdftotext", pdf_path, "-"], capture_output=True, text=True)
-            full_text = output.stdout.strip()
+        if full_text.strip():
+            return full_text  # Если нашли текст через PyMuPDF, возвращаем его
 
-        return full_text if full_text.strip() else None
+        # Если текст не найден, пробуем OCR
+        ocr_text = extract_text_with_ocr(pdf_path)
+        return ocr_text if ocr_text.strip() else None
 
     except Exception as e:
-        print(f"Ошибка при чтении {pdf_path}: {e}")
+        print(f"Ошибка при обработке {pdf_path}: {e}")
         return None
+
+
+def extract_text_with_ocr(pdf_path):
+    """Извлекает текст из отсканированного PDF с помощью OCR."""
+    images = convert_from_path(pdf_path)
+    ocr_text = ""
+
+    for img in images:
+        text = pytesseract.image_to_string(img, lang="rus")
+        ocr_text += f"\n{text}"
+
+    return ocr_text.strip()
+
 
 def process_pdf_folder(pdf_folder):
     """Обрабатывает все PDF в папке и сохраняет текст в файлы .txt"""
@@ -55,6 +61,7 @@ def process_pdf_folder(pdf_folder):
                 print(f"✅ Обработан: {filename}")
             else:
                 print(f"⚠️ Не удалось извлечь текст из: {filename}")
+
 
 if __name__ == "__main__":
     pdf_folder = "parsers/data/pdf"
