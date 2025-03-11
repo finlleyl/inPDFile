@@ -1,0 +1,49 @@
+{
+  "name": "my-vite-project",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "stylelint": "stylelint \"src/**/*.{css,scss}\"",
+    "stylelint:fix": "stylelint \"src/**/*.{css,scss}\" --fix",
+    "lint": "eslint --fix \"./src/**/*.{js,jsx,ts,tsx,json}\"",
+    "format": "prettier --write \"./src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\" --ignore-path ./.prettierignore",
+    "check": "npm run stylelint:fix && npm run lint && npm run format",
+    "prepare": "husky install"
+  },
+  "lint-staged": {
+    "*.{css,scss}": "npm run stylelint:fix",
+    "*.{js,jsx,ts,tsx}": "npm run lint",
+    "*.{js,jsx,ts,tsx,json,css,scss,md}": "npm run format"
+  },
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.2.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.21.0",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@types/react-router-dom": "^5.3.3",
+    "@typescript-eslint/eslint-plugin": "^8.25.0",
+    "@typescript-eslint/parser": "^8.25.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^9.21.0",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "globals": "^15.15.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.4.3",
+    "stylelint": "^16.15.0",
+    "stylelint-config-standard": "^37.0.0",
+    "stylelint-order": "^6.0.4",
+    "typescript": "~5.7.2",
+    "typescript-eslint": "^8.24.1",
+    "vite": "^6.2.0",
+    "vite-plugin-svgr": "^4.3.0"
+  }
+}
