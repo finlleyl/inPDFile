@@ -77,4 +77,4 @@ def crawl(url, depth=0):
             crawl(full_url, depth + 1)
 
 if __name__ == "__main__":
-    crawl(BASE_URL)
+    crawl(BASE_URL) 
