@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import styles from '../header/header.module.css';
+// @ts-ignore
 import Logo from '../../assets/file-contract-svgrepo-com.svg?react';
 
 const Header: React.FC = () => {
