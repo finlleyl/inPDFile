@@ -2,3 +2,6 @@ pymupdf
 pytesseract
 Pillow
 pandas
+selenium
+webdriver_manager
+beautifulsoup4
