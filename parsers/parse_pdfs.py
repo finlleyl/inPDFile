@@ -6,9 +6,9 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
-# Настраиваем Selenium
+# Selenium settings
 options = webdriver.ChromeOptions()
-options.add_argument("--headless")  # Запуск без графического интерфейса
+options.add_argument("--headless")
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
 BASE_URL = "https://mai.ru/common/documents/reports/"
@@ -16,21 +16,19 @@ SAVE_FOLDER = "data/pdf"
 os.makedirs(SAVE_FOLDER, exist_ok=True)
 
 def download_pdf(url, save_path):
-    """Функция для скачивания PDF"""
     try:
         response = requests.get(url, stream=True)
         response.raise_for_status()
         with open(save_path, "wb") as file:
             for chunk in response.iter_content(1024):
                 file.write(chunk)
-        print(f"✅ Скачан: {save_path}")
+        print(f"Скачан: {save_path}")
     except Exception as e:
-        print(f"❌ Ошибка при скачивании {url}: {e}")
+        print(f"Ошибка при скачивании {url}: {e}")
 
 def parse_pdfs_selenium():
-    """Используем Selenium для парсинга PDF-ссылок"""
     driver.get(BASE_URL)
-    time.sleep(2)  # Ждем загрузку страницы
+    time.sleep(2)
 
     pdf_links = []
     elements = driver.find_elements(By.TAG_NAME, "a")
