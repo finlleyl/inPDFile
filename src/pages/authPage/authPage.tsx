@@ -1,76 +1,58 @@
 import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
-import './AuthPage.css';
+import { AuthContext } from "../../context/AuthContext.tsx";
+import { useContext } from "react";
+import './authPage.css';
 import axios from "axios";
 
-const AuthPage: React.FC = () => {
-  const [isLogin, setIsLogin] = useState<boolean>(true);
-  const [username, setUsername] = useState<string>('');                  // username
-  const [password, setPassword] = useState<string>('');                  // password
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+const authPage: React.FC = () => {
   const navigate = useNavigate();
+  const authContext = useContext(AuthContext);
+  if (!authContext) {
+    return null;
+  }
+  const { setUsername }=authContext;
+
+  const [isLogin, setIsLogin] = useState<boolean>(true);
+  const [user, setUser] = useState<string>('');                          // username
+  const [password, setPassword] = useState<string>('');                  // password
 
 
-
-  // Auth - авторизация, отслеживание отправки формы
   const handleAuth = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    if (username && password) {
+    if (user && password) {
       if (isLogin) {
-        axios
-            .post('http://localhost:8000/auth/login', {
-          "email": username,
+        await axios.post('http://localhost:8000/auth/login', {
+          "email": user,
           "password": password,
         }, {
           withCredentials: true
-        })
-            .then(function (response) {
+        }).then(function (response) {
+          setUsername(user);
           console.log(response);
-            setIsAuthenticated(true);
-        })
-            .catch(e => {
+          navigate('/profile');
+        }).catch(e => {
+          alert('Неверный логил или пароль.');
           console.error(e);
         })
 
       } else {
-        axios
-            .post('http://localhost:8000/auth/register', {
-          "email": username,
+        await axios.post('http://localhost:8000/auth/register', {
+          "email": user,
           "password": password,
         }, {
           withCredentials: true
-        })
-            .then(response => {
+        }).then(response => {
+          setUsername(user);
           console.log(response);
-          navigate('/confirmCode', { state : { username }});
-        })
-            .catch(e => {
+          navigate('/confirmCode', { state : { user }});
+        }).catch(e => {
           console.error(e);
         })
       }
     }
   };
-
-  // logout - сброс данных
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    setUsername('');
-    setPassword('');
-  };
-
-  if (isAuthenticated) {
-    return (
-      <div className="auth-container">
-        <div className="dashboard">
-          <h1>Личный кабинет</h1>
-          <p>Добро пожаловать, {username}!</p>
-          <button onClick={handleLogout}>Выйти</button>
-        </div>
-      </div>
-    );
-  }
-
 
   return (
     <div className="auth-container">
@@ -81,8 +63,8 @@ const AuthPage: React.FC = () => {
           <input
             type="text"
             id="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            value={user}
+            onChange={(e) => setUser(e.target.value)}
             required
           />
         </div>
@@ -109,4 +91,4 @@ const AuthPage: React.FC = () => {
   );
 };
 
-export default AuthPage;
+export default authPage;

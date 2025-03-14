@@ -1,27 +1,30 @@
-import React, { useState} from 'react';
-import {useNavigate, useLocation} from "react-router-dom";
+import React, { useState } from 'react';
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../../context/AuthContext.tsx";
+import { useContext } from "react";
 import './confirmCode.css';
 import axios from "axios";
 
 
 const confirmCode: React.FC = () => {
+    const authContext = useContext(AuthContext);
+    if (!authContext) {
+        return null;
+    }
+    const { username }=authContext;
+
     const [code, setCode] = useState<string>('');
     const navigate = useNavigate();
-    const location = useLocation();
-    const username = location.state?.username || 'Unknown';
 
     const handleCode = async (event: React.FormEvent) => {
         event.preventDefault();
 
-        axios
-            .put(`http://localhost:8000/auth/confirm?code=${code}`, {}, {
+        await axios.put(`http://localhost:8000/auth/confirm?code=${code}`, {}, {
             withCredentials : true
-        })
-            .then(function (response){
+        }).then(function (response){
             console.log(response);
                 navigate('/');
-        })
-            .catch(e => {
+        }).catch(e => {
             console.error(e);
         })
     }

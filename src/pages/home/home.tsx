@@ -1,41 +1,38 @@
 import React, { useState } from 'react';
-import './Home.css'; // Импорт стилей
+import './home.css';
+import axios from "axios";
 
-const Home: React.FC = () => {
+const home: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
-  const [analysisResult, setAnalysisResult] = useState<string | null>(null);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
+    if (event.target.files && event.target.files.length > 0) {
       setFile(event.target.files[0]);
     }
   };
 
-  const handleFileUpload = async () => {
-    if (!file) return;
+  const handleFileUpload= async () => {
+    if (!file) {
+      alert("Выберите файл!");
+      return;
+    }
 
     setLoading(true);
+
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append("file", file);
 
-    try {
-      const response = await fetch('/api/analyze-pdf', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        setAnalysisResult(result.message);
-      } else {
-        setAnalysisResult('Ошибка при анализе файла');
-      }
-    } catch (error) {
-      setAnalysisResult('Ошибка при отправке файла');
-    } finally {
+    await axios.post("http://localhost:8000/pdf/upload", formData, {
+        withCredentials: true,
+        headers: { "Content-Type": "multipart/form-data" },
+    }).then(response => {
+      console.log("Файл загружен:", response.data);
+    }).catch (e => {
+      console.error(e);
+    }).finally(() => {
       setLoading(false);
-    }
+    })
   };
 
   return (
@@ -59,14 +56,8 @@ const Home: React.FC = () => {
           {loading ? 'Загрузка...' : 'Загрузить файл'}
         </button>
       </div>
-      {analysisResult && (
-        <div className="analysis-result">
-          <h3>Результат анализа:</h3>
-          <p>{analysisResult}</p>
-        </div>
-      )}
     </main>
   );
 };
 
-export default Home;
+export default home;
