@@ -44,4 +44,4 @@ def parse_pdfs_selenium():
     driver.quit()
 
 if __name__ == "__main__":
-    parse_pdfs_selenium()
+    parse_pdfs_selenium() 
