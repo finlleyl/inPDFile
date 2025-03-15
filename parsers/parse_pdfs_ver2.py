@@ -11,7 +11,6 @@ visited_urls = set()
 MAX_DEPTH = 1000  
 
 def get_html(url):
-    """Получает HTML-код страницы, если это не бинарный файл"""
     headers = {"User-Agent": "Mozilla/5.0"}
     response = requests.get(url, headers=headers)
     response.raise_for_status()
@@ -23,7 +22,6 @@ def get_html(url):
     return response.text
 
 def find_pdfs(url):
-    """Находит и скачивает PDF файлы со страницы"""
     html = get_html(url)
     if not html:
         return
@@ -37,11 +35,10 @@ def find_pdfs(url):
             download_pdf(full_url)
 
 def download_pdf(url):
-    """Скачивает PDF файл"""
     pdf_name = os.path.join(SAVE_FOLDER, os.path.basename(urlparse(url).path))
     
     if os.path.exists(pdf_name):
-        print(f"✅ Уже скачан: {pdf_name}")
+        print(f"Уже скачан: {pdf_name}")
         return
     
     try:
@@ -51,16 +48,15 @@ def download_pdf(url):
         with open(pdf_name, "wb") as file:
             for chunk in response.iter_content(1024):
                 file.write(chunk)
-        print(f"✅ Скачан: {pdf_name}")
+        print(f"Скачан: {pdf_name}")
     except Exception as e:
-        print(f"❌ Ошибка при скачивании {url}: {e}")
+        print(f"Ошибка при скачивании {url}: {e}")
 
 def crawl(url, depth=0):
-    """Рекурсивный обход сайта, ограниченный глубиной"""
     if depth > MAX_DEPTH or url in visited_urls:
         return
     
-    print(f"🔍 Обхожу страницу: {url}")
+    print(f"Обхожу страницу: {url}")
     visited_urls.add(url)
     find_pdfs(url)
     

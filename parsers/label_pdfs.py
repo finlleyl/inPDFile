@@ -11,14 +11,12 @@ LABELS = {
 }
 
 def classify_document(text):
-    """Определяет тип документа по ключевым словам"""
     for label, keywords in LABELS.items():
         if any(word in text.lower() for word in keywords):
             return label
     return "прочее"
 
 def label_pdfs(txt_folder, output_csv):
-    """Размечает все txt-файлы и сохраняет разметку в CSV"""
     data = []
 
     for filename in os.listdir(txt_folder):
@@ -31,7 +29,7 @@ def label_pdfs(txt_folder, output_csv):
 
     df = pd.DataFrame(data, columns=["filename", "label"])
     df.to_csv(output_csv, index=False, encoding="utf-8")
-    print(f"✅ Разметка сохранена в {output_csv}")
+    print(f"Разметка сохранена в {output_csv}")
 
 if __name__ == "__main__":
     txt_folder = "parsers/data/pdf"

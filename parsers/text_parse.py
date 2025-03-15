@@ -8,7 +8,6 @@ from PIL import Image
 
 
 def extract_text_from_pdf(pdf_path):
-    """Извлекает текст из PDF. Сначала пытаемся извлечь текст напрямую, если не удаётся — используем OCR."""
     try:
         full_text = extract_text(pdf_path).strip()
 
@@ -33,7 +32,6 @@ def extract_text_from_pdf(pdf_path):
 
 
 def extract_text_with_ocr(pdf_path):
-    """Извлекает текст из отсканированного PDF с помощью OCR."""
     images = convert_from_path(pdf_path)
     ocr_text = ""
 
@@ -45,7 +43,6 @@ def extract_text_with_ocr(pdf_path):
 
 
 def process_pdf_folder(pdf_folder):
-    """Обрабатывает все PDF в папке и сохраняет текст в файлы .txt"""
     for filename in os.listdir(pdf_folder):
         if filename.endswith(".pdf"):
             pdf_path = os.path.join(pdf_folder, filename)
