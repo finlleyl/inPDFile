@@ -14,27 +14,28 @@ const authPage: React.FC = () => {
   const { setUsername }=authContext;
 
   const [isLogin, setIsLogin] = useState<boolean>(true);
-  const [user, setUser] = useState<string>('');                          // username
-  const [password, setPassword] = useState<string>('');                  // password
-
+  const [user, setUser] = useState<string>('');           // username
+  const [password, setPassword] = useState<string>('');   // password
 
   const handleAuth = async (event: React.FormEvent) => {
     event.preventDefault();
 
     if (user && password) {
       if (isLogin) {
-        await axios.post('http://localhost:8000/auth/login', {
-          "email": user,
-          "password": password,
-        }, {
-          withCredentials: true
-        }).then(function (response) {
-          setUsername(user);
-          console.log(response);
-          navigate('/profile');
-        }).catch(e => {
-          alert('Неверный логил или пароль.');
-          console.error(e);
+        await axios
+            .post('http://localhost:8000/auth/login', {
+              "email": user,
+              "password": password,
+            }, {
+              withCredentials: true
+        })
+            .then(function (response) {
+              setUsername(user);
+              console.log(response);
+              navigate('/profile');
+        })
+            .catch(e => {
+              console.error(e);
         })
 
       } else {

@@ -1,6 +1,8 @@
 import React, {useEffect, useState} from 'react';
 import './history.css';
 import axios from "axios";
+import { useLoading } from "../../context/LoadingContext";
+import LoadingOrbitBar from "../../components/loadingBar/loadingOrbitBar";
 
 interface FileData {
   file_name: string;
@@ -19,10 +21,15 @@ const history: React.FC = () => {
   const [visibleFiles, setVisibleFiles] = useState<FileData[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(false);
+  const { startLoading, stopLoading } = useLoading();
 
   useEffect(() => {
     const fetchFiles = async () => {
       setLoading(true);
+      startLoading();
+
+      // Эта функция просто для тестирования. Имитируем задержку, пока отправляется файл.
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
       await axios.get<FileData[]>("http://localhost:8000/pdf/history/", {
         withCredentials: true,
@@ -31,9 +38,10 @@ const history: React.FC = () => {
         setVisibleFiles(response.data.slice(0, 10)); // Показываем первые 10
       }).catch (e => {
         console.error("Ошибка загрузки истории файлов:", e);
+      }).finally(() => {
+        stopLoading();
+        setLoading(false);
       });
-
-      setLoading(false);
     };
 
     fetchFiles();
@@ -48,7 +56,7 @@ const history: React.FC = () => {
   return (
       <div className="home-container">
         <h1>История загруженных файлов</h1>
-        {loading ? <p>Загрузка...</p> : (
+        {loading ? (<LoadingOrbitBar />) : (
             <>
               <ul>
                 {visibleFiles.map((file, index) => (
