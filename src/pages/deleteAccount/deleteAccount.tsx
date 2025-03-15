@@ -4,6 +4,7 @@ import { AuthContext } from "../../context/AuthContext.tsx";
 import { useContext } from "react";
 import './deleteAccount.css';
 import axios from "axios";
+import {toast} from "react-toastify";
 
 
 const deleteAccount: React.FC = () => {
@@ -21,10 +22,12 @@ const deleteAccount: React.FC = () => {
         await axios.delete('http://localhost:8000/auth/delete', {
             withCredentials: true
         }).then((response) => {
+            toast.warning('Аккаунт удален');
             setUsername(null);
             console.log(response);
             navigate('/');
         }).catch((e) => {
+            toast.error('Ошибка');
             console.error(e);
         })
     };

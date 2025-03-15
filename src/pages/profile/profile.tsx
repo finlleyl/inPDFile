@@ -4,6 +4,7 @@ import { AuthContext } from "../../context/AuthContext.tsx";
 import { useContext } from "react";
 import './profile.css';
 import axios from "axios";
+import {toast} from "react-toastify";
 
 
 const profile: React.FC = () => {
@@ -22,6 +23,7 @@ const profile: React.FC = () => {
         await axios.post('http://localhost:8000/auth/logout', {}, {
             withCredentials: true
         }).then((response) => {
+            toast.warning('Вы вышли из аккаунта');
             setUsername(null);
             console.log(response);
             navigate('/authPage');

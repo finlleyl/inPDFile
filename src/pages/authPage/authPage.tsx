@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext.tsx";
 import { useContext } from "react";
+import { toast } from "react-toastify";
 import './authPage.css';
 import axios from "axios";
 
@@ -32,9 +33,11 @@ const authPage: React.FC = () => {
             .then(function (response) {
               setUsername(user);
               console.log(response);
+              toast.success('Вы вошли в профиль');
               navigate('/profile');
         })
             .catch(e => {
+              toast.error('Неверный логин или пароль');
               console.error(e);
         })
 
@@ -45,10 +48,12 @@ const authPage: React.FC = () => {
         }, {
           withCredentials: true
         }).then(response => {
+            toast.success('Аккаунт создан');
           setUsername(user);
           console.log(response);
           navigate('/confirmCode', { state : { user }});
         }).catch(e => {
+            toast.error('Неверный формат данных');
           console.error(e);
         })
       }

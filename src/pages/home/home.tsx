@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useLoading } from "../../context/LoadingContext";
 import './home.css';
 import axios from "axios";
+import {toast} from "react-toastify";
 
 const home: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -34,9 +35,11 @@ const home: React.FC = () => {
         withCredentials: true,
         headers: { "Content-Type": "multipart/form-data" },
     }).then(response => {
+      toast.success('Файл загружен');
       setFile(null);
       console.log("Файл загружен:", response.data);
     }).catch (e => {
+      toast.error('Ошибка загрузки');
       console.error(e);
     }).finally(() => {
       stopLoading();

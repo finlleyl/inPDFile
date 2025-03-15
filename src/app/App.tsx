@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from "../context/AuthContext";
 import { LoadingProvider } from "../context/LoadingContext";
+import {Bounce, ToastContainer} from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css'
 import './App.css';
 import Header from '../components/header/header';
 import Home from '../pages/home/home.tsx';
@@ -20,6 +22,19 @@ function App() {
           <div className="App">
             <LoadingTopBar />
             <Header />
+            <ToastContainer
+                position="bottom-right"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick={false}
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+                transition={Bounce}
+            />
             <div className="main-container">
               <Routes>
                 <Route path="/" element={<Home />} />

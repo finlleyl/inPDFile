@@ -4,6 +4,7 @@ import { AuthContext } from "../../context/AuthContext.tsx";
 import { useContext } from "react";
 import './confirmCode.css';
 import axios from "axios";
+import {toast} from "react-toastify";
 
 
 const confirmCode: React.FC = () => {
@@ -22,9 +23,11 @@ const confirmCode: React.FC = () => {
         await axios.put(`http://localhost:8000/auth/confirm?code=${code}`, {}, {
             withCredentials : true
         }).then(function (response){
+            toast.success('Аккаунт подтвержен');
             console.log(response);
                 navigate('/');
         }).catch(e => {
+            toast.error('Невеный код');
             console.error(e);
         })
     }
