@@ -1,0 +1,8 @@
+names:
+- stamp
+- signature
+nc: 2
+path: my_dataset_yolo
+test: images\test
+train: images\train
+val: images\val

@@ -5,3 +5,6 @@ pandas
 selenium
 webdriver_manager
 beautifulsoup4
+PyYAML
+click
+tqdm
