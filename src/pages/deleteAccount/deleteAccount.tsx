@@ -37,6 +37,7 @@ const deleteAccount: React.FC = () => {
             <div className="dashboard">
                 <h1>Вы точно хотите удалить аккаунт?</h1>
                 <p>Это действие необратимо!</p>
+                <button onClick={() => { navigate('/profile') }}>Назад</button>
                 <button onClick={handleDelete}>Удалить</button>
             </div>
         </div>

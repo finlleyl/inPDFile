@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
-import { useLoading } from "../../context/LoadingContext";
 import './home.css';
 import axios from "axios";
 import {toast} from "react-toastify";
+import NProgress from 'nprogress';
 
 const home: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
-  const { startLoading, stopLoading } = useLoading();
-
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
@@ -18,31 +16,37 @@ const home: React.FC = () => {
 
   const handleFileUpload= async () => {
     if (!file) {
-      alert("Выберите файл!");
+      toast.error("Выберите файл!");
       return;
     }
 
     const formData = new FormData();
     formData.append("file", file);
-
-    startLoading();
     setLoading(true);
-
-    // Эта функция просто для тестирования. Имитируем задержку, пока отправляется файл.
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    NProgress.start();
 
     await axios.post("http://localhost:8000/pdf/upload", formData, {
-        withCredentials: true,
-        headers: { "Content-Type": "multipart/form-data" },
+          onUploadProgress: (progressEvent) => {
+            if (!progressEvent.total) return;
+            const percentage = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            NProgress.set(percentage);
+            console.log('progress loading: ' + percentage);
+          },
+          withCredentials: true,
+          headers: { "Content-Type": "multipart/form-data" },
+
     }).then(response => {
       toast.success('Файл загружен');
       setFile(null);
       console.log("Файл загружен:", response.data);
+
     }).catch (e => {
+      setFile(null);
       toast.error('Ошибка загрузки');
       console.error(e);
+
     }).finally(() => {
-      stopLoading();
+      NProgress.done;
       setLoading(false);
     })
   };

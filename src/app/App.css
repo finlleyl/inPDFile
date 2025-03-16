@@ -58,3 +58,12 @@
 .main-container {
   padding-top: 13%;
 }
+
+#nprogress .bar {
+  background: #f11946;
+  height: 4px;
+}
+
+#nprogress .peg {
+  box-shadow: 0 0 10px #f11946, 0 0 5px #f11946;
+}
