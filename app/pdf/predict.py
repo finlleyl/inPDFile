@@ -6,15 +6,15 @@ import numpy as np
 from ultralytics import YOLO
 from ultralytics.utils.plotting import Annotator, colors
 
-import torch
+# import torch
 
-_old_load = torch.load
-torch.load = lambda f, map_location=None, **kwargs: _old_load(
-    f, map_location=map_location, weights_only=False, **kwargs
-)
+# _old_load = torch.load
+# torch.load = lambda f, map_location=None, **kwargs: _old_load(
+#     f, map_location=map_location, weights_only=False, **kwargs
+# )
 
 
-model_sample_model = YOLO("./models/best.pt")
+model_sample_model = YOLO("./../best.pt")
 
 
 def transform_predict_to_df(results: list, labeles_dict: dict) -> pd.DataFrame:
@@ -74,14 +74,12 @@ def detect_sample_model(input_image: Image) -> pd.DataFrame:
 
 
 def add_bboxs_on_img(image: Image, predict: pd.DataFrame()) -> Image:
-    annotator = Annotator(
-        np.array(image), font_size=40, pil=True
-    ) 
+    annotator = Annotator(np.array(image), font_size=40, pil=True)
 
     predict = predict.sort_values(by=["xmin"], ascending=True)
 
     for i, row in predict.iterrows():
-        text = f"{row['name']}: {int(row['confidence']*100)}%"
+        text = f"{row['name']}: {int(row['confidence'] * 100)}%"
         bbox = [row["xmin"], row["ymin"], row["xmax"], row["ymax"]]
         annotator.box_label(bbox, text, color=colors(row["class"], True))
     return Image.fromarray(annotator.result())
@@ -89,10 +87,8 @@ def add_bboxs_on_img(image: Image, predict: pd.DataFrame()) -> Image:
 
 def get_bytes_from_image(image: Image) -> bytes:
     return_image = io.BytesIO()
-    image.save(
-        return_image, format="JPEG", quality=85
-    )
-    return_image.seek(0) 
+    image.save(return_image, format="JPEG", quality=85)
+    return_image.seek(0)
     return return_image
 
 
