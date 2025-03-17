@@ -64,7 +64,7 @@
     padding: 0.75rem;
     border: none;
     border-radius: 8px;
-    background: linear-gradient(90deg, #ff00cc, #9f54a0);
+    background-color: hwb(0 20% 0%);
     color: #ffffff;
     font-size: 1rem;
     font-weight: bold;
@@ -74,18 +74,17 @@
 
 .auth-form button[type='submit']:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(255, 0, 204, 0.4);
 }
 
 .toggle-button {
     margin-top: 1.5rem;
     background: none;
     border: none;
-    color: #ee83d9;
+    color: hwb(0 20% 0%);
     font-size: 1rem;
     cursor: pointer;
     text-decoration: underline;
-    transition: color 0.3s ease;
+    transition: hwb(0 20% 0%);
 }
 
 .toggle-button:hover {

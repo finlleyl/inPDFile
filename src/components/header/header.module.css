@@ -131,3 +131,18 @@
     font-size: 1rem;
   }
 }
+
+.login-button {
+  background-color: hwb(0 20% 0%);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background 0.3s;
+}
+
+.login-button:hover {
+  background-color: hwb(0 10% 0%);
+}

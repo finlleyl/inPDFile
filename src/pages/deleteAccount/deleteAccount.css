@@ -1,6 +1,5 @@
 /* home.css */
 .home-container {
-    padding: 2rem;
     text-align: center;
     min-height: 100%;
     display: flex;
@@ -30,7 +29,7 @@
 
 .custom-file-upload {
     padding: 0.75rem 1.5rem;
-    background-color: hwb(310 49% 0%);
+    background-color: hwb(0 20% 0%);
     color: white;
     border: none;
     border-radius: 8px;
@@ -40,7 +39,7 @@
 }
 
 .custom-file-upload:hover {
-    background-color: hwb(310 21% 0%);
+    background-color: hwb(0 20% 0%);
 }
 
 .file-upload-container button {

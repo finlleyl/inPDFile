@@ -3,6 +3,7 @@ import './home.css';
 import axios from "axios";
 import {toast} from "react-toastify";
 import NProgress from 'nprogress';
+import Footer from './Footer';
 
 const home: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -72,7 +73,14 @@ const home: React.FC = () => {
           {loading ? 'Загрузка...' : 'Загрузить файл'}
         </button>
       </div>
+
+      <Footer /> {/* футер*/}
+
+
     </main>
+
+
+
   );
 };
 

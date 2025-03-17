@@ -22,7 +22,6 @@ const header: React.FC = () => {
         </Link>
         <div className={styles.naiming}>
           <h1>inPDFile</h1>
-          <p>мгновенное определение типа документа</p>
         </div>
       </div>
       <nav className={styles.nav}>
@@ -37,7 +36,7 @@ const header: React.FC = () => {
             {username ? (
                 <button onClick={() => navigate("/profile")}>{ username }</button>
             ) : (
-                <button onClick={() => navigate("/authPage")}>Войти</button>
+                <button className="login-button" onClick={() => navigate("/authPage")}>Войти</button>
             )}
 
           </li>
