@@ -1,56 +1,99 @@
-"# inPDFile"
+# inPDFile
 
-# React + TypeScript + Vite
+inPDFile — это front-end приложение для анализа PDF-документов, разработанное на React с использованием TypeScript и Vite. Приложение взаимодействует с backend API (на FastAPI) для загрузки, анализа PDF-файлов, а также для управления аутентификацией пользователя. В процессе работы используются такие библиотеки, как axios, react-toastify и NProgress.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Основные возможности
 
-Currently, two official plugins are available:
+- **Загрузка и анализ PDF**  
+  Пользователь может загрузить PDF, после чего приложение отправит файл на сервер для анализа. Результатом анализа является изображение с нанесёнными областями (bounding boxes).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Управление пользователем**  
+  Авторизация, подтверждение кода, просмотр профиля и удаление аккаунта.
 
-## Expanding the ESLint configuration
+- **Глобальный индикатор загрузки**  
+  Отображение прогресса HTTP-запросов с использованием NProgress.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Всплывающие уведомления**  
+  Информирование пользователя о статусе операций с помощью react-toastify.
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-});
+## Структура проекта
+
+```text
+src/ 
+├── assets/                # Статические файлы (изображения, иконки)
+├── components/            # Повторно используемые компоненты (Header, LoadingBar)
+├── context/               # Глобальные состояния (AuthContext)
+├── pages/                 # Страницы приложения (Home, History, AuthPage, ConfirmCode, Profile, DeleteAccount)
+├── App.tsx                # Корневой компонент приложения с настройками провайдеров и маршрутизацией
+└── main.tsx               # Точка входа приложения
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Технологии
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x';
-import reactDom from 'eslint-plugin-react-dom';
+- **React** + **TypeScript** — основа приложения
+- **Vite** — быстрый сборщик
+- **React Router** — маршрутизация
+- **axios** — HTTP-запросы
+- **NProgress** — индикатор загрузки
+- **react-toastify** — уведомления
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-});
+## Инструкция по запуску
+
+### Предварительные условия
+
+- Node.js (v14+)
+- npm
+
+### Шаги запуска
+
+1. **Клонировать репозиторий:**
+   ```bash
+   git clone <https://github.com/finlleyl/inPDFile.git>
+   cd inPDFile
+   ```
+
+2. **Установить зависимости:**
+   ```bash
+   npm install
+   ```
+
+3. **Запустить приложение в режиме разработки:**
+   ```bash
+   npm run dev
+   ```
+   После этого Vite поднимет сервер, доступный по адресу `http://localhost:8080`.
+
+
+## Пример работы с API
+
+При загрузке файла на странице (например, в компоненте AnalyzeUpload) выполняется следующий алгоритм:
+1. Пользователь выбирает PDF-файл.
+2. Файл упаковывается в FormData и отправляется на сервер по эндпоинту `/analyze`.
+3. Во время загрузки отображается индикатор и NProgress, а также обновляется процент выполнения.
+4. После получения ответа отображается результат анализа.
+
+
+## Настройка CORS
+
+Для корректной работы с куки на backend (FastAPI) необходимо в настройках CORS разрешить запросы с front-end.
+Пример для локальной разработки:
+```python
+origins = [
+    "http://localhost",
+    "http://localhost:8080",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=[
+        "Content-Type",
+        "Set-Cookie",
+        "Access-Control-Allow-Headers",
+        "Access-Control-Allow-Origin",
+        "Authorization",
+    ],
+)
 ```
