@@ -1,6 +1,6 @@
 #root {
   min-height: 100vh;
-  width: 100%;
+  width: 100vw;
   margin: 0;
   padding: 0;
   text-align: center;
@@ -45,8 +45,7 @@
 .App {
   min-height: 100vh;
   background-image: url('../assets/watercolor.png');
-  background-size: cover;
-  background-position: center;
+  background-size: 100vw;
   background-repeat: no-repeat;
   background-attachment: fixed;
 }
@@ -58,4 +57,13 @@
 
 .main-container {
   padding-top: 13%;
+}
+
+#nprogress .bar {
+  background: #f11946;
+  height: 4px;
+}
+
+#nprogress .peg {
+  box-shadow: 0 0 10px #f11946, 0 0 5px #f11946;
 }

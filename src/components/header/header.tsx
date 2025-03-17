@@ -1,9 +1,19 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from "../../context/AuthContext";
 import styles from '../header/header.module.css';
+// @ts-ignore
 import Logo from '../../assets/file-contract-svgrepo-com.svg?react';
 
-const Header: React.FC = () => {
+const header: React.FC = () => {
+  const navigate = useNavigate();
+  const authContext = useContext(AuthContext);
+  if (!authContext) {
+    return null;
+  }
+  const { username }=authContext;
+
+
   return (
     <header className={styles.header}>
       <div className={styles.logoContainer}>
@@ -24,7 +34,12 @@ const Header: React.FC = () => {
             <Link to="/history">История загрузок</Link>
           </li>
           <li>
-            <Link to="/AuthPage">Профиль</Link>
+            {username ? (
+                <button onClick={() => navigate("/profile")}>{ username }</button>
+            ) : (
+                <button onClick={() => navigate("/authPage")}>Войти</button>
+            )}
+
           </li>
         </ul>
       </nav>
@@ -32,4 +47,4 @@ const Header: React.FC = () => {
   );
 };
 
-export default Header;
+export default header;
