@@ -44,7 +44,7 @@
 
 .file-upload-container button {
     padding: 0.75rem 1.5rem;
-    background-color: hwb(310 49% 0%);
+    background-color: hwb(0 20% 0%);
     color: white;
     border: none;
     border-radius: 8px;
@@ -59,7 +59,7 @@
 }
 
 .file-upload-container button:hover:not(:disabled) {
-    background-color: hwb(310 21% 0%);
+    background-color: hwb(0 20% 0%);
 }
 
 .analysis-result {

@@ -1,82 +1,107 @@
-/* home.css */
-.home-container {
-  text-align: center;
-  min-height: 100%;
+.page-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  padding: 40px;
 }
 
-.home-container h1 {
-  margin-bottom: 1rem;
-  color: #333;
+.content {
+  display: flex;
+  flex-direction: row; /* Размещаем элементы в строку */
+  align-items: center;
+  justify-content: space-between; /* Равномерное распределение */
+  width: 100%;
+  max-width: 900px; /* Ограничиваем максимальную ширину */
 }
 
-.home-container p {
-  font-size: 1.2rem;
-  color: #555;
-  margin-bottom: 2rem;
+.info-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.info-box {
+  background: white;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  color: #1a1a1a;
+  max-width: 400px;
 }
 
 .file-upload-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
 }
+
+.file-drop-zone {
+  width: 400px;
+  height: 150px;
+  border: 2px dashed #ccc;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin-top: 10px;
+  color: #1a1a1a;
+}
+
+.selected-file{
+  color: #1a1a1a;
+}
+
 
 .custom-file-upload {
-  padding: 0.75rem 1.5rem;
-  background-color: hwb(0 20% 0%);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
+  background: white;
+  border: 1px solid #ccc;
+  padding: 10px 15px;
+  border-radius: 5px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  font-weight: bold;
 }
 
-.custom-file-upload:hover {
-  background-color: hwb(0 20% 0%);
-}
-
-.file-upload-container button {
-  padding: 0.75rem 1.5rem;
-  background-color: hwb(310 49% 0%);
+.upload-button {
+  width: 400px;
+  background: red;
   color: white;
+  padding: 10px 20px;
   border: none;
-  border-radius: 8px;
-  font-size: 1rem;
   cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.file-upload-container button:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
-
-.file-upload-container button:hover:not(:disabled) {
-  background-color: hwb(310 21% 0%);
-}
-
-.analysis-result {
-  margin-top: 2rem;
-  padding: 1rem;
-  background-color: #f1f1f1;
+  margin-top: 10px;
   border-radius: 8px;
-  max-width: 600px;
+  font-weight: bold;
+  text-align: center;
+}
+
+
+html, body {
+  height: 100%;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.page-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.content {
+  flex: 1; /* Растягивает контент, чтобы футер был внизу */
+}
+
+.footer {
   width: 100%;
 }
 
-.analysis-result h3 {
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
-  color: #333;
-}
-
-.analysis-result p {
-  font-size: 1rem;
-  color: #555;
-}
