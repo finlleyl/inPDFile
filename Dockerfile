@@ -4,7 +4,8 @@ RUN mkdir /pdf
 
 WORKDIR /pdf
 
-
+RUN apt update && \
+    apt install -y htop libgl1-mesa-glx libglib2.0-0
 
 COPY requirements.txt .
 

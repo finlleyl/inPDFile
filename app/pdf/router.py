@@ -1,8 +1,15 @@
+import os
 import urllib
 from datetime import datetime
 from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
-from fastapi.responses import StreamingResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
+from pdf2image import convert_from_bytes
 from sqlalchemy.exc import SQLAlchemyError
+from app.pdf.predict import (
+    add_bboxs_on_img,
+    detect_sample_model,
+    get_bytes_from_image,
+)
 from app.pdf.schemas import SHistoryOut, SUploadOut
 from app.users.dependencies import get_current_user
 from app.users.models import Users
@@ -12,6 +19,7 @@ from app.pdf.dao import PdfDocumentsDAO
 from app.dao.mongodb_dao import MongoDBStorageDAO
 from app.logger import logger
 
+poppler_path = r"C:\poppler\poppler-24.08.0\Library\bin"
 
 router = APIRouter(
     prefix="/pdf",
@@ -81,6 +89,49 @@ async def upload_pdf(
             raise HTTPException(
                 status_code=500, detail=f"Ошибка загрузки файла: {str(e)}"
             ) from e
+
+
+@router.post("/analyze")
+async def analyze_pdf(
+    request: Request,
+    file: UploadFile = File(...),
+    user: Users = Depends(get_current_user),
+):
+
+    output_format = "png"
+    page_number = 0
+    pdf_bytes = await file.read()
+    if page_number:
+        pages = convert_from_bytes(
+            pdf_bytes,
+            dpi=300,
+            first_page=page_number,
+            last_page=page_number,
+        )
+    else:
+        pages = convert_from_bytes(pdf_bytes, poppler_path=poppler_path, dpi=300)
+
+    predict = detect_sample_model(pages[0])
+
+    final_image = add_bboxs_on_img(image=pages[0], predict=predict)
+
+
+    return StreamingResponse(
+        content=get_bytes_from_image(final_image), media_type="image/jpeg"
+    )
+
+    image_paths = []
+    for i, page in enumerate(pages):
+        image_path = os.path.join(TEMP_FOLDER, f"{1232}_page_{i + 1}.{output_format}")
+        page.save(image_path, output_format.upper())
+        image_paths.append(image_path)
+
+    # If only one page, return the file directly
+    if len(image_paths) == 1:
+        return FileResponse(image_paths[0], media_type=f"image/{output_format}")
+
+    # Otherwise, return paths to all images
+    return JSONResponse({"images": image_paths})
 
 
 @router.get("/download/{file_id}")
