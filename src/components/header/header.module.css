@@ -67,6 +67,7 @@
 
 .nav ul li {
   margin-left: 20px;
+  align-self: center;
 }
 
 .nav ul li a {

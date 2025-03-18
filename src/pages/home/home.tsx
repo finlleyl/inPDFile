@@ -7,6 +7,7 @@ import NProgress from 'nprogress';
 const home: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [dragActive, setDragActive] = useState<boolean>(false);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
@@ -28,7 +29,7 @@ const home: React.FC = () => {
     await axios.post("http://localhost:8000/pdf/upload", formData, {
           onUploadProgress: (progressEvent) => {
             if (!progressEvent.total) return;
-            const percentage = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            const percentage = Math.round((progressEvent.loaded * 100) / progressEvent.total) / 100;
             NProgress.set(percentage);
             console.log('progress loading: ' + percentage);
           },
@@ -51,6 +52,23 @@ const home: React.FC = () => {
     })
   };
 
+  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setDragActive(true);
+  };
+
+  const handleDragLeave = () => {
+    setDragActive(false);
+  };
+
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setDragActive(false);
+    if (event.dataTransfer.files && event.dataTransfer.files.length > 0) {
+      setFile(event.dataTransfer.files[0]);
+    }
+  };
+
   return (
     <main className="home-container">
       <div>
@@ -68,6 +86,18 @@ const home: React.FC = () => {
           onChange={handleFileChange}
           style={{ display: 'none' }}
         />
+
+        <div
+            className={`file-drop-zone ${dragActive ? 'active' : ''}`}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+        >
+          <p>Перетащите сюда ваши файлы</p>
+        </div>
+
+        {file && <p className="selected-file">Выбран файл: {file.name}</p>}
+
         <button onClick={handleFileUpload} disabled={!file || loading}>
           {loading ? 'Загрузка...' : 'Загрузить файл'}
         </button>
